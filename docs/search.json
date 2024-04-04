@@ -1,0 +1,37 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Bansari’s website",
+    "section": "",
+    "text": "Welcome to my website!\nI’m a Graduate student pursuing Business Analytics :)"
+  },
+  {
+    "objectID": "resume.html",
+    "href": "resume.html",
+    "title": "Bansari’s resume",
+    "section": "",
+    "text": "Download PDF file."
+  },
+  {
+    "objectID": "projects.html",
+    "href": "projects.html",
+    "title": "My Projects",
+    "section": "",
+    "text": "My main Project\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nNo matching items"
+  },
+  {
+    "objectID": "projects/project1/index.html",
+    "href": "projects/project1/index.html",
+    "title": "My main Project",
+    "section": "",
+    "text": "I like to plot data.\n\n\nI also analyze data."
+  },
+  {
+    "objectID": "projects/project1/index.html#sub-header",
+    "href": "projects/project1/index.html#sub-header",
+    "title": "My main Project",
+    "section": "",
+    "text": "I also analyze data."
+  }
+]
