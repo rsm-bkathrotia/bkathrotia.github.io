@@ -18,14 +18,14 @@
     "href": "projects.html",
     "title": "My Projects",
     "section": "",
-    "text": "My main Project\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nNo matching items"
+    "text": "Homework 1\n\n\n\n\n\n\nBansari Kathrotia\n\n\nApr 5, 2024\n\n\n\n\n\n\n\n\nNo matching items"
   },
   {
     "objectID": "projects/project1/index.html",
     "href": "projects/project1/index.html",
-    "title": "My main Project",
+    "title": "Homework 1",
     "section": "",
-    "text": "I like to plot data.\n\n\nI also analyze data."
+    "text": "some\nword\nin\nbullets\n\n\nsome\nnumbers\nin\na\nlist"
   },
   {
     "objectID": "projects/project1/index.html#sub-header",
@@ -33,5 +33,12 @@
     "title": "My main Project",
     "section": "",
     "text": "I also analyze data."
+  },
+  {
+    "objectID": "projects/project1/index.html#sub-section",
+    "href": "projects/project1/index.html#sub-section",
+    "title": "Homework 1",
+    "section": "",
+    "text": "some\nword\nin\nbullets\n\n\nsome\nnumbers\nin\na\nlist"
   }
 ]

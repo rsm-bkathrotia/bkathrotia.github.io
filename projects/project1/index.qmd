@@ -1,18 +1,29 @@
 ---
-title: My main Project
+title: Homework 1
+subtitle: p-value
+author: Bansari Kathrotia
+date: 4/5/2024
+toc: true
 ---
 
-# Header 1
-
-I like to plot data.
-
-## Sub-Header
-
-I also analyze data.
-
 ```{r}
-# library(tidyverse)
-# mtcars |>
-#     ggplot(aes(x=mpg, y=disp)) +
-#     geom_pont()
-# ```
+#| message: false
+#| echo: false
+
+library(tidyverse)
+```
+
+# Section 1: Basic test formatting
+## Sub-section
+### Header
+
+- some
+- word
+- in
+- bullets
+
+1. some
+2. numbers
+3. in 
+4. a 
+5. list
