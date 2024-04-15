@@ -27,3 +27,87 @@ library(tidyverse)
 3. in 
 4. a 
 5. list
+
+text can be **bold**, or _italics_, or ~~strikethrough~~
+
+My website is <https://rsm-bkathrotia.github.io/bkathrotia.github.io/> or [here](https://rsm-bkathrotia.github.io/bkathrotia.github.io/)
+
+# Section 2: some Math
+
+If you want inline $y = mx + b$
+
+$$
+\int_0^1 x^2 dx = \frac{1}{3} \hspace{2em} \beta \hspace{2em} \text{or} \hspace{2em} \hat{\beta}
+$$
+
+some latex math:
+
+```{=latex}
+\begin{align}
+y &= a(b+c) \\
+  &= ab + ac
+\end{align}
+```
+
+# Section 3: code
+
+You can do inline code like so `r format(sqrt(2), digits = 3)`
+
+```{r}
+#| eval: false
+data(mtcars)
+cor(mtcars$mpg, mtcars$wt)
+```
+
+# Section 4: Plots
+
+
+```{r}
+#| fig-height: 4
+#| fig-width: 4
+#| fig-align: center
+
+p <- mtcars |>
+    ggplot(aes(mpg, wt)) +
+    geom_point(col = "dodgerblue4", size = 2)
+print(p)
+```
+
+# Section 5: Tables
+```{r}
+mtcars[1:5, ]
+```
+
+
+```{r}
+knitr :: kable(mtcars[1:5, ],)
+```
+
+# Bonus Section 
+
+:::{.callout-note}
+### Note title
+
+note body
+
+:::
+
+a tabset panel
+
+:::{.panel-tabset}
+
+## Jesus
+
+```{r}
+#| echo: false
+p
+```
+## Brian
+
+```{r}
+#| echo: false
+#| message: false
+#| 
+p + geom_smooth(method = "lm", se = F)
+```
+:::
