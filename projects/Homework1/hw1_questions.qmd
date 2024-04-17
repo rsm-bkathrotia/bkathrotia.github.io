@@ -14,6 +14,14 @@ _to do: expand on the description of the experiment._
 
 This project seeks to replicate their results.
 
+```{python}
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import statsmodels.formula.api as ols
+from scipy import stats
+```
 
 ## Data
 
