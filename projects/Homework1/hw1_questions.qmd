@@ -23,11 +23,31 @@ import statsmodels.formula.api as ols
 from scipy import stats
 ```
 
-## Data
+## Dataset 
+
+```{python}
+#| message: false
+#| echo: true
+
+data = pd.read_stata('data/karlan_list_2007.dta')
+#convert the stata file to csv
+data.to_csv('data/karlan_list_2007.csv')
+data
+```
 
 ### Description
 
+The dataset contains 50,083 rows and 51 columns with different datatypes. 
+
 _todo: Read the data into R/Python and describe the data_
+
+Key points summarizing the dataset:
+
+- **Experimental Design**: Tracks the impact of different fundraising treatments versus control scenarios on donor behavior.
+- **Matching and Donation Thresholds**: Includes variables for various matching ratios and financial thresholds, influencing donation amounts.
+- **Donor Demographics and History**: Details about donors such as gender, couple status, previous donations, and years since the first donation.
+- **Geographic and Socioeconomic Factors**: Analyzes the influence of state and local demographics, including political alignment and socioeconomic status, on donation patterns.
+
 
 :::: {.callout-note collapse="true"}
 ### Variable Definitions
