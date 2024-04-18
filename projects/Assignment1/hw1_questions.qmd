@@ -294,8 +294,6 @@ print(probit_model_summary)
 
 Next, I assess the effectiveness of different sizes of matched donations on the response rate.
 
-_todo: Use a series of t-tests to test whether the size of the match ratio has an effect on whether people donate or not. For example, does the 2:1 match rate lead increase the likelihood that someone donates as compared to the 1:1 match rate? Do your results support the "figures suggest" comment the authors make on page 8?_
-
 ```{python}
 donations_ratio1 = data[data['ratio'] == 1]['gave']
 donations_ratio2 = data[data['ratio'] == 2]['gave']
@@ -309,21 +307,130 @@ t_test_1_vs_2, t_test_1_vs_3, t_test_2_vs_3
 
 ```
 
+_todo: Use a series of t-tests to test whether the size of the match ratio has an effect on whether people donate or not. For example, does the 2:1 match rate lead increase the likelihood that someone donates as compared to the 1:1 match rate? Do your results support the "figures suggest" comment the authors make on page 8?_
+
+
+```{python}
+#| echo: false
+import pandas as pd
+import statsmodels.api as sm
+
+data['ratio'] = data['ratio'].astype(str)
+y = data['gave'].astype(float)
+
+X_categorical = pd.get_dummies(data['ratio'], drop_first=True).astype(float)
+X_categorical = sm.add_constant(X_categorical)  
+
+```
+
+```{python}
+model_categorical = sm.OLS(y, X_categorical)
+results_categorical = model_categorical.fit()
+
+print(results_categorical.summary())
+
+```
+
+
 _todo: Assess the same issue using a regression. Specifically, create the variable `ratio1` then regress `gave` on `ratio1`, `ratio2`, and `ratio3` (or alternatively, regress `gave` on the categorical variable `ratio`). Interpret the coefficients and their statistical precision._
 
 _todo: Calculate the response rate difference between the 1:1 and 2:1 match ratios and the 2:1 and 3:1 ratios.  Do this directly from the data, and do it by computing the differences in the fitted coefficients of the previous regression. what do you conclude regarding the effectiveness of different sizes of matched donations?_
 
+```{python}
+import pandas as pd
 
+# Define the ratios to be analyzed
+ratios = ['1', '2', '3']
+
+# Calculate donation rates for each ratio
+donation_rates = {ratio: data[data['ratio'] == ratio]['gave'].mean() for ratio in ratios}
+
+# Calculate differences between successive donation rates
+rate_differences = {f"{ratios[i]}_to_{ratios[i+1]}": donation_rates[ratios[i+1]] - donation_rates[ratios[i]]
+                    for i in range(len(ratios) - 1)}
+
+# Enhanced print statements with more detailed messaging
+for diff_label, diff_value in rate_differences.items():
+    # Formatting the label for more readable output
+    ratio_pair = diff_label.replace('_', ' to ')
+    print(f"Change in donation rates from {ratio_pair.replace(':', ' to ')} ratio: {diff_value:.6f}")
+
+```
 ### Size of Charitable Contribution
 
 In this subsection, I analyze the effect of the size of matched donation on the size of the charitable contribution.
 
 _todo: Calculate a t-test or run a bivariate linear regression of the donation amount on the treatment status. What do we learn from doing this analysis?_
 
+```{python}
+#| echo: false
+treatment_group = data[data['treatment'] == 1]['amount']  
+control_group = data[data['treatment'] == 0]['amount']  
+
+t_stat, p_value = ttest_ind(treatment_group, control_group, nan_policy='omit', equal_var=False)
+
+print("T-Statistic:", t_stat)
+print("P-Value:", p_value)
+```
+
 _todo: now limit the data to just people who made a donation and repeat the previous analysis. This regression allows you to analyze how much respondents donate conditional on donating some positive amount. Interpret the regression coefficients -- what did we learn? Does the treatment coefficient have a causal interpretation?_ 
+
+```{python}
+
+#| echo: false
+donors_data = data[data['amount'] > 0]
+treatment_group = donors_data[donors_data['treatment'] == 1]['amount']
+control_group = donors_data[donors_data['treatment'] == 0]['amount']
+
+t_stat, p_value = ttest_ind(treatment_group, control_group, nan_policy='omit', equal_var=False)
+
+print("T-Statistic:", t_stat)
+print("P-Value:", p_value)
+```
 
 _todo: Make two plot: one for the treatment group and one for the control. Each plot should be a histogram of the donation amounts only among people who donated. Add a red vertical bar or some other annotation to indicate the sample average for each plot._
 
+```{python}
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Set the style of seaborn for more attractive and informative graphics
+sns.set(style="whitegrid")
+
+donors_data = data[data['amount'] > 0]
+
+treatment_donors = donors_data[donors_data['treatment'] == 1]['amount']
+control_donors = donors_data[donors_data['treatment'] == 0]['amount']
+
+treatment_mean = treatment_donors.mean()
+control_mean = control_donors.mean()
+
+plt.figure(figsize=(14, 6))  # Adjusted for a better fit of both histograms
+
+# Histogram for the Treatment Group
+plt.subplot(1, 2, 1)
+sns.histplot(treatment_donors, bins=30, color='green', kde=True, edgecolor='black')
+plt.axvline(treatment_mean, color='darkred', linestyle='dashed', linewidth=2)
+plt.title('Treatment Group Donation Amounts')
+plt.xlabel('Donation Amount ($)')
+plt.ylabel('Frequency')
+plt.annotate(f'Mean: {treatment_mean:.2f}', xy=(treatment_mean, 10), xytext=(treatment_mean + 50, 12),
+             arrowprops=dict(facecolor='black', arrowstyle='->'))
+
+# Histogram for the Control Group
+plt.subplot(1, 2, 2)
+sns.histplot(control_donors, bins=30, color='purple', kde=True, edgecolor='black')
+plt.axvline(control_mean, color='darkred', linestyle='dashed', linewidth=2)
+plt.title('Control Group Donation Amounts')
+plt.xlabel('Donation Amount ($)')
+plt.ylabel('Frequency')
+plt.annotate(f'Mean: {control_mean:.2f}', xy=(control_mean, 10), xytext=(control_mean + 50, 12),
+             arrowprops=dict(facecolor='black', arrowstyle='->'))
+
+plt.tight_layout()
+plt.show()
+
+```
 
 ## Simulation Experiment
 
@@ -333,16 +440,89 @@ Suppose the true distribution of respondents who do not get a charitable donatio
 
 Further suppose that the true distribution of respondents who do get a charitable donation match of any size  is Bernoulli with probability p=0.022 that a donation is made.
 
+
 ### Law of Large Numbers
 
 _to do:  Make a plot like those on slide 43 from our first class and explain the plot to the reader. To do this, you will simulate 100,00 draws from the control distribution and 10,000 draws from the treatment distribution. You'll then calculate a vector of 10,000 differences, and then you'll plot the cumulative average of that vector of differences. Comment on whether the cumulative average approaches the true difference in means._
 
+```{python}
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Parameters set by the professor
+p_control = 0.018
+p_treatment = 0.022
+n_simulations = 10000
+
+# Simulating outcomes
+control_draws = np.random.binomial(1, p_control, n_simulations)
+treatment_draws = np.random.binomial(1, p_treatment, n_simulations)
+
+# Calculating differences between treatment and control outcomes
+diff_vector = treatment_draws - control_draws
+
+# Calculating cumulative average of differences over simulations
+cumulative_avg_diff = np.cumsum(diff_vector) / np.arange(1, n_simulations + 1)
+
+# Setting up the plot
+plt.figure(figsize=(10, 6))
+plt.plot(cumulative_avg_diff, color='blue', label='Cumulative Average of Differences')
+plt.axhline((p_treatment - p_control), color='red', linestyle='--', label='Expected Difference')
+plt.xlabel('Number of Simulations')
+plt.ylabel('Cumulative Average Difference')
+plt.title('Simulation of Difference Between Treatment and Control')
+plt.legend()
+plt.grid(True)  # Adding a grid for better readability of the plot
+plt.show()
+
+```
 
 ### Central Limit Theorem
 
 _to do: Make 4 histograms like those on slide 44 from our first class at sample sizes 50, 200, 500, and 1000 and explain these plots to the reader. To do this for a sample size of e.g. 50, take 50 draws from each of the control and treatment distributions, and calculate the average difference between those draws. Then repeat that process 999 more times so that you have 1000 averages. Plot the histogram of those averages. Comment on whether zero is in the "middle" of the distribution or whether it's in the "tail."_
 
 
+```{python}
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
 
+def simulate_and_plot_histograms(control_prob, treatment_prob, sample_sizes, num_repetitions=1000):
+    # Setting up the visual style using seaborn for more appealing histograms
+    sns.set(style="whitegrid", palette="pastel")
 
+    fig, axes = plt.subplots(1, 4, figsize=(20, 5))
+    fig.suptitle('Distribution of Difference in Proportions Across Sample Sizes')
 
+    for i, sample_size in enumerate(sample_sizes):
+        mean_differences = []
+
+        for _ in range(num_repetitions):
+            control_draws = np.random.binomial(1, control_prob, sample_size)
+            treatment_draws = np.random.binomial(1, treatment_prob, sample_size)
+            mean_differences.append(treatment_draws.mean() - control_draws.mean())
+
+        # Using seaborn for histogram plotting for improved aesthetics
+        sns.histplot(mean_differences, bins=30, kde=True, color='skyblue', ax=axes[i])
+        axes[i].axvline(0, color='red', linestyle='dashed', linewidth=2, label='No Difference')
+        axes[i].axvline(treatment_prob - control_prob, color='green', linestyle='dashed', linewidth=2, label='True Difference')
+        axes[i].set_title(f'Sample Size: {sample_size}')
+        axes[i].set_xlabel('Mean Difference')
+        axes[i].set_ylabel('Frequency')
+        if i == 0:  # Adding the legend to only the first subplot for clarity
+            axes[i].legend()
+
+    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+    plt.show()
+
+# Control and treatment probabilities given
+control_prob = 0.018
+treatment_prob = 0.022
+
+# List of sample sizes to simulate
+sample_sizes = [50, 200, 500, 1000]
+
+# Call the function with the updated parameters and visual setup
+simulate_and_plot_histograms(control_prob, treatment_prob, sample_sizes)
+
+```
