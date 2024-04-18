@@ -1,9 +1,9 @@
 ---
 title: "A Replication of Karlan and List (2007)"
 author: "Bansari Kathrotia"
-date: April 16, 2024
+date: "April 16, 2024"
 callout-appearance: minimal # this hides the blue "i" icon on .callout-notes
-toc: true
+toc: true 
 ---
 
 
@@ -26,9 +26,9 @@ import numpy as np
 #| message: false
 #| echo: true
 
-data = pd.read_stata('data/karlan_list_2007.dta')
+data = pd.read_stata('karlan_list_2007.dta')
 #convert the stata file to csv
-data.to_csv('data/karlan_list_2007.csv')
+data.to_csv('karlan_list_2007.csv')
 data
 ```
 
@@ -55,6 +55,7 @@ control_perc = data['control'].mean()
 
 ```{python}
 #| echo: true
+#| message: true
 
 # Printing the results
 print(f"Treatment Percentage: {treatment_perc}")
@@ -134,8 +135,8 @@ _todo: test a few variables other than the key outcome variables (for example, t
 Comparing the average values of variables such as `mrm2` between treatment and control groups helps us determine if there are any statistically significant differences between these groups at a 95% confidence level.
 
 ```{python}
-
 #| echo: false
+
 from scipy.stats import ttest_ind
 
 # Assume 'data' is a DataFrame loaded previously
@@ -155,7 +156,6 @@ treatment_vs_control_stats, control_vs_control_stats
 ```
 
 ```{python}
-
 #| echo: false
 
 evar = ['female', 'couple', 'pwhite', 'pblack', 'page18_39', 'ave_hh_sz', 'median_hhincome', 'powner', 'psch_atlstba', 'pop_propurban']
@@ -174,6 +174,7 @@ lin_reg_treatment = smf.ols(formula, data=treatment_data).fit()
 ```
 
 ```{python}
+
 # Print the summary of the model for the Treatment Group
 print(lin_reg_treatment.summary())
 
@@ -194,6 +195,7 @@ lin_reg_control = smf.ols(formula, data=control_data).fit()
 ```
 
 ```{python}
+
 # Print the summary of the model for the Control Group
 print(lin_reg_control.summary())
 
@@ -208,7 +210,6 @@ print(lin_reg_control.params.sort_values(key=abs, ascending=False))
 First, I analyze whether matched donations lead to an increased response rate of making a donation. 
 
 ```{python}
-
 #| echo: False
 
 import matplotlib.pyplot as plt
@@ -271,7 +272,6 @@ _todo: run a t-test between the treatment and control groups on the binary outco
 _todo: run a probit regression where the outcome variable is whether any charitable donation was made and the explanatory variable is assignment to treatment or control. Confirm that your results replicate Table 3 column 1 in the paper._
 
 ```{python}
-
 #| echo: false
 
 import statsmodels.api as sm
@@ -312,6 +312,7 @@ _todo: Use a series of t-tests to test whether the size of the match ratio has a
 
 ```{python}
 #| echo: false
+
 import pandas as pd
 import statsmodels.api as sm
 
@@ -337,7 +338,6 @@ _todo: Assess the same issue using a regression. Specifically, create the variab
 _todo: Calculate the response rate difference between the 1:1 and 2:1 match ratios and the 2:1 and 3:1 ratios.  Do this directly from the data, and do it by computing the differences in the fitted coefficients of the previous regression. what do you conclude regarding the effectiveness of different sizes of matched donations?_
 
 ```{python}
-import pandas as pd
 
 # Define the ratios to be analyzed
 ratios = ['1', '2', '3']
@@ -364,6 +364,7 @@ _todo: Calculate a t-test or run a bivariate linear regression of the donation a
 
 ```{python}
 #| echo: false
+
 treatment_group = data[data['treatment'] == 1]['amount']  
 control_group = data[data['treatment'] == 0]['amount']  
 
@@ -376,8 +377,8 @@ print("P-Value:", p_value)
 _todo: now limit the data to just people who made a donation and repeat the previous analysis. This regression allows you to analyze how much respondents donate conditional on donating some positive amount. Interpret the regression coefficients -- what did we learn? Does the treatment coefficient have a causal interpretation?_ 
 
 ```{python}
-
 #| echo: false
+
 donors_data = data[data['amount'] > 0]
 treatment_group = donors_data[donors_data['treatment'] == 1]['amount']
 control_group = donors_data[donors_data['treatment'] == 0]['amount']

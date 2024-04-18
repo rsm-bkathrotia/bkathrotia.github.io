@@ -1,7 +1,8 @@
 {
   "listingMap": {
     "projects.qmd": [
-      "projects"
+      "projects",
+      "projects/Assignment1/hw1_questions.qmd"
     ]
   }
 }
