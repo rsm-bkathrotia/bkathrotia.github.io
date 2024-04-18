@@ -17,10 +17,6 @@ This project seeks to replicate their results.
 ```{python}
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-import statsmodels.formula.api as ols
-from scipy import stats
 ```
 
 ## Dataset 
@@ -48,6 +44,21 @@ Key points summarizing the dataset:
 - **Donor Demographics and History**: Details about donors such as gender, couple status, previous donations, and years since the first donation.
 - **Geographic and Socioeconomic Factors**: Analyzes the influence of state and local demographics, including political alignment and socioeconomic status, on donation patterns.
 
+```{python}
+#| echo: false
+
+# Calculate the mean for treatment and control to get the percentages
+treatment_perc = data['treatment'].mean()
+control_perc = data['control'].mean()
+```
+
+```{python}
+#| echo: true
+
+# Printing the results
+print(f"Treatment Percentage: {treatment_perc}")
+print(f"Control Percentage: {control_perc}")
+```
 
 :::: {.callout-note collapse="true"}
 ### Variable Definitions
@@ -113,14 +124,144 @@ Key points summarizing the dataset:
 
 As an ad hoc test of the randomization mechanism, I provide a series of tests that compare aspects of the treatment and control groups to assess whether they are statistically significantly different from one another.
 
+
+### T-Test
+
 _todo: test a few variables other than the key outcome variables (for example, test months since last donation) to see if the treatment and control groups are statistically significantly different at the 95% confidence level. Do each as a t-test and separately as a linear regression, and confirm you get the exact same results from both methods. When doing a t-test, use the formula in the class slides. When doing the linear regression, regress for example mrm2 on treatment and look at the estimated coefficient on the treatment variable. It might be helpful to compare parts of your analysis to Table 1 in the paper. Be sure to comment on your results (hint: why is Table 1 included in the paper)._
 
 
+Comparing the average values of variables such as `mrm2` between treatment and control groups helps us determine if there are any statistically significant differences between these groups at a 95% confidence level.
+
+```{python}
+
+#| echo: false
+from scipy.stats import ttest_ind
+
+# Assume 'data' is a DataFrame loaded previously
+# Filtering treatment and control groups
+treatment_group = data.loc[data['treatment'] == 1, 'mrm2'].dropna()
+control_group = data.loc[data['control'] == 1, 'mrm2'].dropna()
+
+# Conducting t-tests between treatment and control groups, and within control group itself
+treatment_vs_control_stats = ttest_ind(treatment_group, control_group)
+control_vs_control_stats = ttest_ind(control_group, control_group)  # Normally not meaningful
+
+```
+
+```{python}
+# Outputting the results of the t-tests
+treatment_vs_control_stats, control_vs_control_stats
+```
+
+```{python}
+
+#| echo: false
+
+evar = ['female', 'couple', 'pwhite', 'pblack', 'page18_39', 'ave_hh_sz', 'median_hhincome', 'powner', 'psch_atlstba', 'pop_propurban']
+import statsmodels.api as sm
+import statsmodels.formula.api as smf
+
+# Defining explanatory variables and the response variable
+formula = 'dormant ~ ' + ' + '.join(evar)
+
+# Subset the data for the Treatment Group
+treatment_data = data.query("treatment == 1")
+
+# Fit the linear regression model for the Treatment Group
+lin_reg_treatment = smf.ols(formula, data=treatment_data).fit()
+
+```
+
+```{python}
+# Print the summary of the model for the Treatment Group
+print(lin_reg_treatment.summary())
+
+# Visualizing the importance of variables 
+print(lin_reg_treatment.params.sort_values(key=abs, ascending=False))  
+```
+
+```{python}
+#| echo: false
+
+# Subset the data for the Control Group
+control_data = data.query("treatment == 0")
+
+# Fit the linear regression model for the Control Group
+lin_reg_control = smf.ols(formula, data=control_data).fit()
+
+
+```
+
+```{python}
+# Print the summary of the model for the Control Group
+print(lin_reg_control.summary())
+
+# Visualizing the importance of variables (similar simplified method)
+print(lin_reg_control.params.sort_values(key=abs, ascending=False))
+
+```
 ## Experimental Results
 
 ### Charitable Contribution Made
 
 First, I analyze whether matched donations lead to an increased response rate of making a donation. 
+
+```{python}
+
+#| echo: False
+
+import matplotlib.pyplot as plt
+import pandas as pd
+import statsmodels.api as sm
+from scipy.stats import ttest_ind
+
+# Calculate the mean donation rates for both groups
+mean_rates = {
+    'Treatment': data.loc[data['treatment'] == 1, 'gave'].mean(),
+    'Control': data.loc[data['control'] == 1, 'gave'].mean()
+}
+
+# Plotting the proportion of donors for each group
+import matplotlib.pyplot as plt
+
+def plot_donation_rates(rates):
+    plt.figure(figsize=(8, 5))
+    # Custom colors and wider bars
+    colors = ['red', 'pink']  # New colors for the bars
+    bar_width = 0.8  # Wider bars for better visibility
+    bars = plt.bar(rates.keys(), rates.values(), color=colors, width=bar_width)
+    plt.ylabel('Proportion of Donors')
+    plt.title('Donor Proportions by Group')
+    plt.ylim(0, max(rates.values()) + 0.02)
+    for bar in bars:
+        yval = bar.get_height()
+        plt.text(bar.get_x() + bar.get_width()/2, yval, round(yval, 2), ha='center', va='bottom')
+    plt.show()
+
+plot_donation_rates(mean_rates)
+
+# Perform a t-test on the 'gave' variable between treatment and control groups
+def compare_groups(data, group_var, response_var):
+    group_data = {group: data[data[group_var] == val][response_var] for val, group in enumerate(['Control', 'Treatment'])}
+    t_stat, p_val = ttest_ind(group_data['Treatment'], group_data['Control'])
+    return t_stat, p_val
+
+t_test_statistic, p_value = compare_groups(data, 'treatment', 'gave')
+
+# Simple OLS regression to assess the impact of treatment on giving
+def run_ols(data, response, predictor):
+    X = sm.add_constant(data[predictor])
+    y = data[response]
+    model = sm.OLS(y, X)
+    results = model.fit()
+    return results
+
+ols_results = run_ols(data, 'gave', 'treatment')
+
+# Output the t-test and OLS results
+t_test_statistic, p_value, ols_results.summary()
+
+```
 
 _todo: make a barplot with two bars. Each bar is the proportion of people who donated. One bar for treatment and one bar for control._
 
@@ -128,12 +269,44 @@ _todo: run a t-test between the treatment and control groups on the binary outco
 
 _todo: run a probit regression where the outcome variable is whether any charitable donation was made and the explanatory variable is assignment to treatment or control. Confirm that your results replicate Table 3 column 1 in the paper._
 
+```{python}
 
+#| echo: false
+
+import statsmodels.api as sm
+from statsmodels.discrete.discrete_model import Probit
+
+# Assuming 'data' is your DataFrame and it contains the response variable 'y' and predictor 'treatment'
+y = data['gave']  # Example of a binary response variable, like a yes/no outcome
+X = sm.add_constant(data['treatment'])  # Adds an intercept to the model
+
+# Initializing and fitting the Probit model
+probit_model = Probit(y, X)
+probit_results = probit_model.fit()
+
+# Displaying the summary of the Probit model
+probit_model_summary = probit_results.summary()
+print(probit_model_summary)
+
+```
 ### Differences between Match Rates
 
 Next, I assess the effectiveness of different sizes of matched donations on the response rate.
 
 _todo: Use a series of t-tests to test whether the size of the match ratio has an effect on whether people donate or not. For example, does the 2:1 match rate lead increase the likelihood that someone donates as compared to the 1:1 match rate? Do your results support the "figures suggest" comment the authors make on page 8?_
+
+```{python}
+donations_ratio1 = data[data['ratio'] == 1]['gave']
+donations_ratio2 = data[data['ratio'] == 2]['gave']
+donations_ratio3 = data[data['ratio'] == 3]['gave']
+
+t_test_1_vs_2 = ttest_ind(donations_ratio1, donations_ratio2)
+t_test_1_vs_3 = ttest_ind(donations_ratio1, donations_ratio3)
+t_test_2_vs_3 = ttest_ind(donations_ratio2, donations_ratio3)
+
+t_test_1_vs_2, t_test_1_vs_3, t_test_2_vs_3
+
+```
 
 _todo: Assess the same issue using a regression. Specifically, create the variable `ratio1` then regress `gave` on `ratio1`, `ratio2`, and `ratio3` (or alternatively, regress `gave` on the categorical variable `ratio`). Interpret the coefficients and their statistical precision._
 
