@@ -1,5 +1,0 @@
----
-title: "Bansari's resume"
----
-
-{{< pdf files/Bansari_K_Resume.pdf width=100% height=800  >}}
