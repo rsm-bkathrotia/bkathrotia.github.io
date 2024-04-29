@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.4.506">
+<meta name="generator" content="quarto-1.4.552">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -96,6 +96,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
     "search-submit-button-title": "Submit",
     "search-label": "Search"
@@ -216,8 +217,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="dataset" class="level2">
 <h2 class="anchored" data-anchor-id="dataset">Dataset</h2>
-<div id="13d8c052" class="cell" data-message="ture" data-execution_count="2">
+<div id="95270b4f" class="cell" data-message="ture" data-execution_count="2">
 <div class="cell-output cell-output-display" data-execution_count="2">
+<div>
 <div>
 
 
@@ -520,6 +522,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </div>
+</div>
 <section id="description" class="level3">
 <h3 class="anchored" data-anchor-id="description">Description</h3>
 <p>The dataset contains 50,083 rows and 51 columns with different datatypes.</p>
@@ -531,7 +534,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><strong>Donor Demographics and History</strong>: Details about donors such as gender, couple status, previous donations, and years since the first donation.</li>
 <li><strong>Geographic and Socioeconomic Factors</strong>: Analyzes the influence of state and local demographics, including political alignment and socioeconomic status, on donation patterns.</li>
 </ul>
-<div id="d5c84a8f" class="cell" data-message="true" data-execution_count="4">
+<div id="0a85a9cd" class="cell" data-message="true" data-execution_count="4">
 <div class="cell-output cell-output-stdout">
 <pre><code>Treatment Percentage: 0.6668130902701516
 Control Percentage: 0.33318690972984844</code></pre>
@@ -780,7 +783,7 @@ Variable Definitions
 <h3 class="anchored" data-anchor-id="t-test">T-Test</h3>
 <p><em>todo: test a few variables other than the key outcome variables (for example, test months since last donation) to see if the treatment and control groups are statistically significantly different at the 95% confidence level. Do each as a t-test and separately as a linear regression, and confirm you get the exact same results from both methods. When doing a t-test, use the formula in the class slides. When doing the linear regression, regress for example mrm2 on treatment and look at the estimated coefficient on the treatment variable. It might be helpful to compare parts of your analysis to Table 1 in the paper. Be sure to comment on your results (hint: why is Table 1 included in the paper).</em></p>
 <p>Comparing the average values of variables such as <code>mrm2</code> between treatment and control groups helps us determine if there are any statistically significant differences between these groups at a 95% confidence level.</p>
-<div id="c3195142" class="cell" data-message="true" data-execution_count="6">
+<div id="d43af02c" class="cell" data-message="true" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Outputting the results of the t-tests</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>treatment_vs_control_stats, control_vs_control_stats</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="6">
@@ -788,15 +791,15 @@ Variable Definitions
  TtestResult(statistic=0.0, pvalue=1.0, df=33372.0))</code></pre>
 </div>
 </div>
-<div id="f7d8320d" class="cell" data-message="true" data-execution_count="8">
+<div id="cc330bbf" class="cell" data-message="true" data-execution_count="8">
 <div class="cell-output cell-output-stdout">
 <pre><code>                            OLS Regression Results                            
 ==============================================================================
 Dep. Variable:                dormant   R-squared:                       0.002
 Model:                            OLS   Adj. R-squared:                  0.001
 Method:                 Least Squares   F-statistic:                     5.652
-Date:                Thu, 18 Apr 2024   Prob (F-statistic):           1.67e-08
-Time:                        00:04:27   Log-Likelihood:                -22664.
+Date:                Mon, 29 Apr 2024   Prob (F-statistic):           1.67e-08
+Time:                        16:09:41   Log-Likelihood:                -22664.
 No. Observations:               31307   AIC:                         4.535e+04
 Df Residuals:                   31296   BIC:                         4.544e+04
 Df Model:                          10                                         
@@ -840,15 +843,15 @@ median_hhincome    5.529393e-07
 dtype: float64</code></pre>
 </div>
 </div>
-<div id="f8097a0e" class="cell" data-message="true" data-execution_count="10">
+<div id="45991170" class="cell" data-message="true" data-execution_count="10">
 <div class="cell-output cell-output-stdout">
 <pre><code>                            OLS Regression Results                            
 ==============================================================================
 Dep. Variable:                dormant   R-squared:                       0.002
 Model:                            OLS   Adj. R-squared:                  0.001
 Method:                 Least Squares   F-statistic:                     2.579
-Date:                Thu, 18 Apr 2024   Prob (F-statistic):            0.00405
-Time:                        00:04:27   Log-Likelihood:                -11328.
+Date:                Mon, 29 Apr 2024   Prob (F-statistic):            0.00405
+Time:                        16:09:41   Log-Likelihood:                -11328.
 No. Observations:               15645   AIC:                         2.268e+04
 Df Residuals:                   15634   BIC:                         2.276e+04
 Df Model:                          10                                         
@@ -903,7 +906,7 @@ dtype: float64</code></pre>
 <section id="charitable-contribution-made" class="level3">
 <h3 class="anchored" data-anchor-id="charitable-contribution-made">Charitable Contribution Made</h3>
 <p>First, I analyze whether matched donations lead to an increased response rate of making a donation.</p>
-<div id="11d07af6" class="cell" data-execution_count="11">
+<div id="62facbeb" class="cell" data-execution_count="11">
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -913,7 +916,7 @@ dtype: float64</code></pre>
 </div>
 <div class="cell-output cell-output-display" data-execution_count="11">
 <pre><code>(3.101361000543946,
- 0.0019274025949016982,
+ 0.0019274025949016986,
  &lt;class 'statsmodels.iolib.summary.Summary'&gt;
  """
                              OLS Regression Results                            
@@ -921,8 +924,8 @@ dtype: float64</code></pre>
  Dep. Variable:                   gave   R-squared:                       0.000
  Model:                            OLS   Adj. R-squared:                  0.000
  Method:                 Least Squares   F-statistic:                     9.618
- Date:                Thu, 18 Apr 2024   Prob (F-statistic):            0.00193
- Time:                        00:04:27   Log-Likelihood:                 26630.
+ Date:                Mon, 29 Apr 2024   Prob (F-statistic):            0.00193
+ Time:                        16:09:41   Log-Likelihood:                 26630.
  No. Observations:               50083   AIC:                        -5.326e+04
  Df Residuals:                   50081   BIC:                        -5.324e+04
  Df Model:                           1                                         
@@ -947,10 +950,9 @@ dtype: float64</code></pre>
 <p>To understand the impact of these letters, we needed to see if the promise of matched funding would nudge more people to open their wallets. So, we ran a t-test and a linear regression, focusing on whether any charitable donation was made.</p>
 <p>Our bar plot showcases the proportion of people who donated in each group, and here’s where it gets interesting: both bars hover around the same height, with a slight edge to the treatment group, hinting that the promise of doubling one’s donation might have slightly increased the likelihood of giving.</p>
 <p>However, the numbers speak louder when we crunch them. The t-test, a statistical scalpel, cut through the data and revealed a p-value of 0.002, a whisper of a number that shouts “This is not random!” The linear regression, painting a broader picture, echoed this sentiment, showing that being in the treatment group had a positive effect on the decision to donate.</p>
-<p>In plain English, what does this all mean? Well, it seems that the idea of a matching grant works somewhat like a charm, convincing more people to donate. It’s not a siren’s call, leading every passerby astray, but more like a friend’s gentle nudge in the right direction. It seems that when people know their donation will be doubled, they’re slightly more inclined to contribute.</p>
+<p>It seems that the idea of a matching grant works somewhat like a charm, convincing more people to donate. It’s not a siren’s call, leading every passerby astray, but more like a friend’s gentle nudge in the right direction. It seems that when people know their donation will be doubled, they’re slightly more inclined to contribute.</p>
 <p>This doesn’t mean everyone is swayed by a matching offer. Some are, some aren’t. But on the whole, more people join the bandwagon when they know their money makes a bigger splash. This is a valuable insight for organizations relying on public generosity. It appears that even in the complex tapestry of human decision-making, a little incentive goes a long way.</p>
-<p><em>todo: run a probit regression where the outcome variable is whether any charitable donation was made and the explanatory variable is assignment to treatment or control. Confirm that your results replicate Table 3 column 1 in the paper.</em></p>
-<div id="abc72ee9" class="cell" data-execution_count="12">
+<div id="eb900015" class="cell" data-message="true" data-execution_count="12">
 <div class="cell-output cell-output-stdout">
 <pre><code>Optimization terminated successfully.
          Current function value: 0.100443
@@ -960,8 +962,8 @@ dtype: float64</code></pre>
 Dep. Variable:                   gave   No. Observations:                50083
 Model:                         Probit   Df Residuals:                    50081
 Method:                           MLE   Df Model:                            1
-Date:                Thu, 18 Apr 2024   Pseudo R-squ.:               0.0009783
-Time:                        00:04:27   Log-Likelihood:                -5030.5
+Date:                Mon, 29 Apr 2024   Pseudo R-squ.:               0.0009783
+Time:                        16:09:42   Log-Likelihood:                -5030.5
 converged:                       True   LL-Null:                       -5035.4
 Covariance Type:            nonrobust   LLR p-value:                  0.001696
 ==============================================================================
@@ -975,7 +977,7 @@ treatment      0.0868      0.028      3.113      0.002       0.032       0.141
 <p>Likely the offer of a matching donation mentioned in the prompt—has a positive and significant effect on the likelihood of a participant making a donation. This aligns with the results shown in Table 3, column 1 of Karlan and List’s paper, confirming that their findings about the effectiveness of matching offers in stimulating charitable donations are replicated in your analysis.</p>
 <p>In layman’s terms, this suggests that when potential donors were told their donations would be matched, they were more inclined to contribute. It’s a bit like having a buy-one-get-one-free offer; knowing that your donation will have double the impact might just be the push needed to move from intention to action. ### Differences between Match Rates</p>
 <p>Next, I assess the effectiveness of different sizes of matched donations on the response rate.</p>
-<div id="b0557c85" class="cell" data-execution_count="13">
+<div id="5e252ef7" class="cell" data-execution_count="13">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>donations_ratio1 <span class="op">=</span> data[data[<span class="st">'ratio'</span>] <span class="op">==</span> <span class="dv">1</span>][<span class="st">'gave'</span>]</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>donations_ratio2 <span class="op">=</span> data[data[<span class="st">'ratio'</span>] <span class="op">==</span> <span class="dv">2</span>][<span class="st">'gave'</span>]</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>donations_ratio3 <span class="op">=</span> data[data[<span class="st">'ratio'</span>] <span class="op">==</span> <span class="dv">3</span>][<span class="st">'gave'</span>]</span>
@@ -992,7 +994,7 @@ treatment      0.0868      0.028      3.113      0.002       0.032       0.141
 </div>
 </div>
 <p><em>todo: Use a series of t-tests to test whether the size of the match ratio has an effect on whether people donate or not. For example, does the 2:1 match rate lead increase the likelihood that someone donates as compared to the 1:1 match rate? Do your results support the “figures suggest” comment the authors make on page 8?</em></p>
-<div id="3e9719fe" class="cell" data-execution_count="15">
+<div id="c01d89ee" class="cell" data-execution_count="15">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>model_categorical <span class="op">=</span> sm.OLS(y, X_categorical)</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>results_categorical <span class="op">=</span> model_categorical.fit()</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -1003,8 +1005,8 @@ treatment      0.0868      0.028      3.113      0.002       0.032       0.141
 Dep. Variable:                   gave   R-squared:                       0.000
 Model:                            OLS   Adj. R-squared:                  0.000
 Method:                 Least Squares   F-statistic:                     3.665
-Date:                Thu, 18 Apr 2024   Prob (F-statistic):             0.0118
-Time:                        00:04:27   Log-Likelihood:                 26630.
+Date:                Mon, 29 Apr 2024   Prob (F-statistic):             0.0118
+Time:                        16:09:42   Log-Likelihood:                 26630.
 No. Observations:               50083   AIC:                        -5.325e+04
 Df Residuals:                   50079   BIC:                        -5.322e+04
 Df Model:                           3                                         
@@ -1029,7 +1031,7 @@ Notes:
 </div>
 <p><em>todo: Assess the same issue using a regression. Specifically, create the variable <code>ratio1</code> then regress <code>gave</code> on <code>ratio1</code>, <code>ratio2</code>, and <code>ratio3</code> (or alternatively, regress <code>gave</code> on the categorical variable <code>ratio</code>). Interpret the coefficients and their statistical precision.</em></p>
 <p><em>todo: Calculate the response rate difference between the 1:1 and 2:1 match ratios and the 2:1 and 3:1 ratios. Do this directly from the data, and do it by computing the differences in the fitted coefficients of the previous regression. what do you conclude regarding the effectiveness of different sizes of matched donations?</em></p>
-<div id="e0b4bf1c" class="cell" data-execution_count="16">
+<div id="6b8298eb" class="cell" data-execution_count="16">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the ratios to be analyzed</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>ratios <span class="op">=</span> [<span class="st">'1'</span>, <span class="st">'2'</span>, <span class="st">'3'</span>]</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -1055,21 +1057,21 @@ Change in donation rates from 2 to to to 3 ratio: 0.000100</code></pre>
 <h3 class="anchored" data-anchor-id="size-of-charitable-contribution">Size of Charitable Contribution</h3>
 <p>In this subsection, I analyze the effect of the size of matched donation on the size of the charitable contribution.</p>
 <p><em>todo: Calculate a t-test or run a bivariate linear regression of the donation amount on the treatment status. What do we learn from doing this analysis?</em></p>
-<div id="51af3eb1" class="cell" data-execution_count="17">
+<div id="333d7cf6" class="cell" data-execution_count="17">
 <div class="cell-output cell-output-stdout">
 <pre><code>T-Statistic: 1.9182618934467577
-P-Value: 0.055085665289183336</code></pre>
+P-Value: 0.05508566528918335</code></pre>
 </div>
 </div>
 <p><em>todo: now limit the data to just people who made a donation and repeat the previous analysis. This regression allows you to analyze how much respondents donate conditional on donating some positive amount. Interpret the regression coefficients – what did we learn? Does the treatment coefficient have a causal interpretation?</em></p>
-<div id="013cb685" class="cell" data-execution_count="18">
+<div id="6fb41e44" class="cell" data-execution_count="18">
 <div class="cell-output cell-output-stdout">
 <pre><code>T-Statistic: -0.5846089794983359
 P-Value: 0.5590471865673547</code></pre>
 </div>
 </div>
 <p><em>todo: Make two plot: one for the treatment group and one for the control. Each plot should be a histogram of the donation amounts only among people who donated. Add a red vertical bar or some other annotation to indicate the sample average for each plot.</em></p>
-<div id="5bd137fb" class="cell" data-execution_count="19">
+<div id="57569035" class="cell" data-execution_count="19">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> seaborn <span class="im">as</span> sns</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -1111,7 +1113,7 @@ P-Value: 0.5590471865673547</code></pre>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="hw1_questions_files/figure-html/cell-20-output-1.png" width="1329" height="562" class="figure-img"></p>
+<p><img src="hw1_questions_files/figure-html/cell-20-output-1.png" width="1328" height="559" class="figure-img"></p>
 </figure>
 </div>
 </div>
@@ -1126,7 +1128,7 @@ P-Value: 0.5590471865673547</code></pre>
 <section id="law-of-large-numbers" class="level3">
 <h3 class="anchored" data-anchor-id="law-of-large-numbers">Law of Large Numbers</h3>
 <p><em>to do: Make a plot like those on slide 43 from our first class and explain the plot to the reader. To do this, you will simulate 100,00 draws from the control distribution and 10,000 draws from the treatment distribution. You’ll then calculate a vector of 10,000 differences, and then you’ll plot the cumulative average of that vector of differences. Comment on whether the cumulative average approaches the true difference in means.</em></p>
-<div id="de18dc75" class="cell" data-execution_count="20">
+<div id="7e952642" class="cell" data-execution_count="20">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -1158,7 +1160,7 @@ P-Value: 0.5590471865673547</code></pre>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="hw1_questions_files/figure-html/cell-21-output-1.png" width="829" height="531" class="figure-img"></p>
+<p><img src="hw1_questions_files/figure-html/cell-21-output-1.png" width="824" height="529" class="figure-img"></p>
 </figure>
 </div>
 </div>
@@ -1167,7 +1169,7 @@ P-Value: 0.5590471865673547</code></pre>
 <section id="central-limit-theorem" class="level3">
 <h3 class="anchored" data-anchor-id="central-limit-theorem">Central Limit Theorem</h3>
 <p><em>to do: Make 4 histograms like those on slide 44 from our first class at sample sizes 50, 200, 500, and 1000 and explain these plots to the reader. To do this for a sample size of e.g.&nbsp;50, take 50 draws from each of the control and treatment distributions, and calculate the average difference between those draws. Then repeat that process 999 more times so that you have 1000 averages. Plot the histogram of those averages. Comment on whether zero is in the “middle” of the distribution or whether it’s in the “tail.”</em></p>
-<div id="48416149" class="cell" data-execution_count="21">
+<div id="b3a6c037" class="cell" data-execution_count="21">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> seaborn <span class="im">as</span> sns</span>
@@ -1212,7 +1214,7 @@ P-Value: 0.5590471865673547</code></pre>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="hw1_questions_files/figure-html/cell-22-output-1.png" width="1905" height="459" class="figure-img"></p>
+<p><img src="hw1_questions_files/figure-html/cell-22-output-1.png" width="1904" height="457" class="figure-img"></p>
 </figure>
 </div>
 </div>
@@ -1302,6 +1304,24 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     // clear code selection
     e.clearSelection();
   });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
   function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
@@ -1336,7 +1356,11 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
-      return note.innerHTML;
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
     });
   }
   const xrefs = window.document.querySelectorAll('a.quarto-xref');
@@ -1351,27 +1375,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       }
     }
     stripColumnClz(note)
-    const typesetMath = (el) => {
-      if (window.MathJax) {
-        // MathJax Typeset
-        window.MathJax.typeset([el]);
-      } else if (window.katex) {
-        // KaTeX Render
-        var mathElements = el.getElementsByClassName("math");
-        var macros = [];
-        for (var i = 0; i < mathElements.length; i++) {
-          var texText = mathElements[i].firstChild;
-          if (mathElements[i].tagName == "SPAN") {
-            window.katex.render(texText.data, mathElements[i], {
-              displayMode: mathElements[i].classList.contains('display'),
-              throwOnError: false,
-              macros: macros,
-              fleqn: false
-            });
-          }
-        }
-      }
-    }
     if (id === null || id.startsWith('sec-')) {
       // Special case sections, only their first couple elements
       const container = document.createElement("div");
@@ -1386,10 +1389,14 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             break;
           }
         }
-        typesetMath(container);
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
         return container.innerHTML
       } else {
-        typesetMath(note);
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
         return note.innerHTML;
       }
     } else {
@@ -1398,8 +1405,15 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       if (anchorLink) {
         anchorLink.remove();
       }
-      typesetMath(note);
-      return note.innerHTML;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
     }
   }
   for (var i=0; i<xrefs.length; i++) {
