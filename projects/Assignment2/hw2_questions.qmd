@@ -21,12 +21,107 @@ However, Blueprinty has collected data on 1,500 mature (non-startup) engineering
 
 _todo: Read in data._
 
+```{python}
+
+#| echo: false
+#| message: false
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+blueprinty = pd.read_csv("blueprinty.csv")
+blueprinty
+
+```
+
+```{python}
+
+#| echo: true
+#| message: true
+
+# Drop the 'Unnamed: 0' column
+blueprinty = blueprinty.drop(columns=['Unnamed: 0'])
+blueprinty
+```
 _todo: Compare histograms and means of number of patents by customer status. What do you observe?_
+
+### Analysis
+
+```{python}
+#| echo: false
+#| message: true
+
+non_customers = blueprinty[blueprinty['iscustomer'] == 0]
+customers = blueprinty[blueprinty['iscustomer'] == 1]
+
+mean_non_customers = non_customers['patents'].mean()
+mean_customers = customers['patents'].mean()
+
+# First Plot: Non-Customers
+plt.figure(figsize=(8, 5))
+plt.hist(non_customers['patents'], bins=20, color='blue', alpha=0.7)
+plt.title('Histogram of Patents (Non-Customers)')
+plt.xlabel('Number of Patents')
+plt.ylabel('Frequency')
+plt.show()
+print(f"Mean Number of Patents for Non-Customers: {mean_non_customers:.2f}")
+
+```
+
+The histogram for non-customers reveals a right-skewed distribution of patent counts, where a significant majority of non-customers have fewer patents, but there are outliers with higher numbers. This skewness suggests that while few non-customers are very innovative, most maintain a lower profile in terms of patent production. The mean number of patents for non-customers is approximately 3.62, underscoring the fact that non-customers generally have fewer patents.
+
+```{python}
+#| echo: false
+#| message: true
+
+# Second Plot: Customers
+plt.figure(figsize=(8, 5))
+plt.hist(customers['patents'], bins=20, color='green', alpha=0.7)
+plt.title('Histogram of Patents (Customers)')
+plt.xlabel('Number of Patents')
+plt.ylabel('Frequency')
+plt.show()
+print(f"Mean Number of Patents for Customers: {mean_customers:.2f}")
+```
+
+In contrast, the histogram for customers also shows a right-skewed distribution but with a noticeable shift towards higher counts of patents. This indicates that customers are generally more active in patenting than non-customers. The mean number of patents for customers, at approximately 4.09, is higher than that of non-customers. This might imply that customer status could be associated with higher innovation levels or that entities with higher patent activities are more likely to be customers.
 
 Blueprinty customers are not selected at random. It may be important to account for systematic differences in the age and regional location of customers vs non-customers.
 
 _todo: Compare regions and ages by customer status. What do you observe?_
 
+```{python}
+
+#| echo: false
+#| message: true
+
+# Age Analysis: Boxplot for Age by Customer Status
+plt.figure(figsize=(8, 6))
+blueprinty.boxplot(column='age', by='iscustomer', grid=False)
+plt.title('Age Distribution by Customer Status')
+plt.xlabel('Customer Status (0=Non-Customer, 1=Customer)')
+plt.ylabel('Age')
+plt.suptitle('')
+plt.show()
+
+# Mean age comparison
+mean_age_non_customers = non_customers['age'].mean()
+mean_age_customers = customers['age'].mean()
+
+# Region Analysis: Frequency by Region and Customer Status
+region_distribution = blueprinty.groupby(['iscustomer', 'region']).size().unstack(fill_value=0)
+
+(mean_age_non_customers, mean_age_customers, region_distribution)
+```
+
+#### Observations:
+- The Northeast region has the highest overall number of entities, both customers and non-customers.
+- Customers form a smaller proportion of the total in each region, but the disparity in numbers between customers and non-customers varies by region.
+
+The younger average age of customers might indicate that younger entities (or individuals) are more likely to become customers, possibly due to newer businesses being more inclined to engage with the offerings. The regional analysis shows that while all regions have more non-customers than customers, the Northeast stands out with a relatively higher number of customers, suggesting regional variations in customer acquisition or market penetration strategies.
+
+These insights could be used to tailor regional marketing strategies or to explore further why younger demographics are more represented among customers.
 
 ### Estimation of Simple Poisson Model
 
@@ -42,11 +137,149 @@ poisson_loglikelihood <- function(lambda, Y){
 }
 ```
 
+```{python}
+
+#| echo: false
+#| message: true
+
+def poisson_loglikelihood(lambda_, Y):
+    """
+    Calculate the log-likelihood of observing data Y under a Poisson distribution with rate lambda_.
+    
+    Parameters:
+        lambda_ (float): The rate parameter of the Poisson distribution.
+        Y (array-like): Observed count data.
+    
+    Returns:
+        float: The log-likelihood value.
+    """
+    return np.sum(-lambda_ + Y * np.log(lambda_) - np.log(np.math.factorial(Y)))
+
+```
+
 _todo: Use your function to plot lambda on the horizontal axis and the likelihood (or log-likelihood) on the vertical axis for a range of lambdas (use the observed number of patents as the input for Y)._
+
+```{python}
+
+#| echo: true
+#| message: true
+
+from scipy.special import factorial
+
+# Extracting the patent data
+Y = blueprinty['patents'].values
+
+# Define a range for lambda, from slightly above 0 to a bit beyond the maximum observed value of patents
+lambda_range = np.linspace(0.1, Y.max() + 5, 300)
+
+# Redefine the poisson log-likelihood function using scipy's factorial for vectorized operations
+def poisson_loglikelihood(lambda_, Y):
+    return np.sum(-lambda_ + Y * np.log(lambda_) - np.log(factorial(Y)))
+
+# Recalculate the log-likelihood for each lambda
+log_likelihoods = [poisson_loglikelihood(l, Y) for l in lambda_range]
+
+
+# Plotting the log-likelihood vs lambda
+plt.figure(figsize=(10, 6))
+plt.plot(lambda_range, log_likelihoods, label='Log-Likelihood')
+plt.title('Log-Likelihood of Poisson Model vs. Lambda')
+plt.xlabel('Lambda')
+plt.ylabel('Log-Likelihood')
+plt.grid(True)
+plt.legend()
+plt.show()
+
+```
+
+#### Observations:
+- Shape: The curve typically shows a peak, indicating the value of λ that maximizes the log-likelihood. This value can be considered as the most likely estimate of λ given the observed data.
+
+#### Interpretation:
+- The peak of the log-likelihood curve provides an insight into the most probable rate of patents per firm over the last 5 years, assuming a Poisson distribution.
+This graphical analysis is useful in understanding the behavior of the likelihood as λ changes and helps in choosing an appropriate λ for further statistical analysis or modeling.
 
 _todo: If you're feeling mathematical, take the first derivative of your likelihood or log-likelihood, set it equal to zero and solve for lambda. You will find lambda_mle is Ybar, which "feels right" because the mean of a Poisson distribution is lambda._
 
+<p>To derive the Maximum Likelihood Estimator (MLE) for <i>&lambda;</i> in a Poisson distribution, we begin with the log-likelihood function and find the value of <i>&lambda;</i> that maximizes this function. The log-likelihood for the Poisson distribution given <i>Y</i> and <i>&lambda;</i> is:</p>
+
+<p><i>&ell;(&lambda;) = &sum;<sub>i=1</sub><sup>n</sup> (-&lambda; + Y<sub>i</sub> &middot; log(&lambda;) - log(Y<sub>i</sub>!))</i></p>
+
+<p>Where <i>n</i> is the number of observations.</p>
+
+<h4>First Derivative of the Log-Likelihood</h4>
+
+<p>To find the maximum, we take the derivative of the log-likelihood with respect to <i>&lambda;</i> and set it to zero. The derivative is:</p>
+
+<p><i>d&ell;/d&lambda; = &sum;<sub>i=1</sub><sup>n</sup> (-1 + Y<sub>i</sub> / &lambda;)</i></p>
+
+<p>Setting this derivative equal to zero for maximization:</p>
+
+<p><i>-n + &sum;<sub>i=1</sub><sup>n</sup> Y<sub>i</sub> / &lambda; = 0</i></p>
+<p><i>&lambda; = (&sum;<sub>i=1</sub><sup>n</sup> Y<sub>i</sub>) / n</i></p>
+
+<h4>Solution for &lambda;</h4>
+
+<p>This result shows that the MLE for <i>&lambda;</i>, <i>&lambda;<sub>MLE</sub></i>, is the sample mean <i>&#780;Y</i> of the observed data:</p>
+
+<p><i>&lambda;<sub>MLE</sub> = &#780;Y</i></p>
+
+<p>This is intuitively satisfying as the mean of a Poisson distribution is <i>&lambda;</i>, and the MLE estimates the parameter such that the observed mean is the most likely estimate under the assumed model.</p>
+
+```{python}
+
+#| echo: true
+#| message: true
+
+# Calculate lambda MLE, which should be the mean of Y
+lambda_mle = Y.mean()
+
+lambda_mle
+
+```
+
+<p>The calculated Maximum Likelihood Estimate (MLE) for <i>&lambda;</i>, which is <i>&lambda;<sub>MLE</sub></i>, is approximately 3.685. This confirms our derivation: the MLE of <i>&lambda;</i> for a Poisson distribution is indeed the sample mean of the observed counts <i>Y</i>, representing the average number of patents awarded per firm over the last 5 years.</p>
+
+
 _todo: Find the MLE by optimizing your likelihood function with optim() in R or sp.optimize() in Python._
+
+```{python}
+
+from scipy.optimize import minimize
+
+# Redefine the poisson log-likelihood function to accept lambda as the first argument
+def neg_poisson_loglikelihood(lambda_, Y):
+    # We will use np.sum(np.log(factorial(Y))) which is a constant to avoid recomputation
+    # as it does not affect the optimization process
+    return -np.sum(-lambda_ + Y * np.log(lambda_)) + np.sum(np.log(factorial(Y)))
+
+# The initial guess for lambda could be the sample mean of Y, or just 1 as a neutral starting point
+initial_lambda = Y.mean()
+
+# We will use the minimize function to find the MLE for lambda
+result = minimize(neg_poisson_loglikelihood, initial_lambda, args=(Y,))
+
+# The result of the optimization will be stored in result.x
+lambda_mle = result.x[0]
+lambda_mle, result.success  # Show the MLE and if the optimization was successful
+
+```
+
+<h3>Explanation</h3>
+<p>We used a Poisson regression model to understand the distribution of patents across different engineering firms over the last 5 years. The Poisson model is appropriate here because the number of patents is count data, typically non-negative integers, and we're considering an interval of time.</p>
+<p>The Poisson distribution is characterized by its rate parameter, <i>&lambda;</i>, which represents the average number of events (patents) in a given time frame. The key property of a Poisson distribution is that its mean and variance are both equal to <i>&lambda;</i>.</p>
+<p>We aimed to estimate this <i>&lambda;</i> using the method of Maximum Likelihood Estimation (MLE). The MLE is a statistical method for estimating the parameters of a model. It works by finding the parameter values that make the observed data most probable.</p>
+
+<h3>Mathematical Derivation</h3>
+<p>We derived mathematically that the MLE for <i>&lambda;</i> is the sample mean (<i>&#780;Y</i>) of our observed patent counts. This derivation was based on setting the first derivative of the log-likelihood function to zero, solving for <i>&lambda;</i>, and demonstrating that <i>&lambda;<sub>MLE</sub></i> equates to the sample mean.</p>
+
+<h3>Numerical Optimization</h3>
+<p>We then used numerical optimization to confirm this result. Because Python's optimization functions typically minimize rather than maximize, we minimized the negative of the log-likelihood function. The result from the <code>scipy.optimize</code> function confirmed that the estimated <i>&lambda;</i> is indeed approximately equal to the sample mean, which validates our earlier mathematical derivation.</p>
+
+<h3>Interpretation</h3>
+<p>The interpretation of this result is that the most likely average rate of patent awards across all engineering firms is around 3.685 patents per firm over the last 5 years. This is an intuitive result because, in a Poisson distribution, the rate <i>&lambda;</i> is the expected count per interval. Therefore, estimating <i>&lambda;</i> as the average observed count aligns with our understanding of the distribution's properties.</p>
+<p>Moreover, this value of <i>&lambda;</i> could be used to predict the expected number of patent awards for similar engineering firms, under similar conditions, over a 5-year period. It also serves as a benchmark for comparing individual firm performance against the average.</p>
+<p>In practice, this Poisson model might be the basis for more complex analyses, such as Poisson regression models that relate <i>&lambda;</i> to other explanatory variables (e.g., firm size, region, R&D spending) to better understand the factors that influence patent output.</p>
 
 
 ### Estimation of Poisson Regression Model

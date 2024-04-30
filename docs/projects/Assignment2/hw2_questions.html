@@ -22,10 +22,44 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
-<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="../../site_libs/quarto-nav/headroom.min.js"></script>
 <script src="../../site_libs/clipboard/clipboard.min.js"></script>
 <script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
@@ -68,6 +102,9 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -151,6 +188,7 @@ window.Quarto = {
   <ul class="collapse">
   <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction">Introduction</a></li>
   <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data">Data</a></li>
+  <li><a href="#analysis" id="toc-analysis" class="nav-link" data-scroll-target="#analysis">Analysis</a></li>
   <li><a href="#estimation-of-simple-poisson-model" id="toc-estimation-of-simple-poisson-model" class="nav-link" data-scroll-target="#estimation-of-simple-poisson-model">Estimation of Simple Poisson Model</a></li>
   <li><a href="#estimation-of-poisson-regression-model" id="toc-estimation-of-poisson-regression-model" class="nav-link" data-scroll-target="#estimation-of-poisson-regression-model">Estimation of Poisson Regression Model</a></li>
   </ul></li>
@@ -205,9 +243,286 @@ window.Quarto = {
 <section id="data" class="level3">
 <h3 class="anchored" data-anchor-id="data">Data</h3>
 <p><em>todo: Read in data.</em></p>
+<div id="071efca7" class="cell" data-message="false" data-execution_count="1">
+<div class="cell-output cell-output-display" data-execution_count="1">
+<div>
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">Unnamed: 0</th>
+<th data-quarto-table-cell-role="th">patents</th>
+<th data-quarto-table-cell-role="th">region</th>
+<th data-quarto-table-cell-role="th">age</th>
+<th data-quarto-table-cell-role="th">iscustomer</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>1</td>
+<td>0</td>
+<td>Midwest</td>
+<td>32.5</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>786</td>
+<td>3</td>
+<td>Southwest</td>
+<td>37.5</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>348</td>
+<td>4</td>
+<td>Northwest</td>
+<td>27.0</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>927</td>
+<td>3</td>
+<td>Northeast</td>
+<td>24.5</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>830</td>
+<td>3</td>
+<td>Southwest</td>
+<td>37.0</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">1495</td>
+<td>1366</td>
+<td>2</td>
+<td>Northeast</td>
+<td>18.5</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1496</td>
+<td>619</td>
+<td>3</td>
+<td>Southwest</td>
+<td>22.5</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">1497</td>
+<td>826</td>
+<td>4</td>
+<td>Southwest</td>
+<td>17.0</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1498</td>
+<td>601</td>
+<td>3</td>
+<td>South</td>
+<td>29.0</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">1499</td>
+<td>602</td>
+<td>1</td>
+<td>South</td>
+<td>39.0</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+
+<p>1500 rows × 5 columns</p>
+</div>
+</div>
+</div>
+</div>
+<div id="5ce80fb7" class="cell" data-message="true" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Drop the 'Unnamed: 0' column</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>blueprinty <span class="op">=</span> blueprinty.drop(columns<span class="op">=</span>[<span class="st">'Unnamed: 0'</span>])</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>blueprinty</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="2">
+<div>
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">patents</th>
+<th data-quarto-table-cell-role="th">region</th>
+<th data-quarto-table-cell-role="th">age</th>
+<th data-quarto-table-cell-role="th">iscustomer</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>0</td>
+<td>Midwest</td>
+<td>32.5</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>3</td>
+<td>Southwest</td>
+<td>37.5</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>4</td>
+<td>Northwest</td>
+<td>27.0</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>3</td>
+<td>Northeast</td>
+<td>24.5</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>3</td>
+<td>Southwest</td>
+<td>37.0</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">1495</td>
+<td>2</td>
+<td>Northeast</td>
+<td>18.5</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1496</td>
+<td>3</td>
+<td>Southwest</td>
+<td>22.5</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">1497</td>
+<td>4</td>
+<td>Southwest</td>
+<td>17.0</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1498</td>
+<td>3</td>
+<td>South</td>
+<td>29.0</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">1499</td>
+<td>1</td>
+<td>South</td>
+<td>39.0</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+
+<p>1500 rows × 4 columns</p>
+</div>
+</div>
+</div>
+</div>
 <p><em>todo: Compare histograms and means of number of patents by customer status. What do you observe?</em></p>
+</section>
+<section id="analysis" class="level3">
+<h3 class="anchored" data-anchor-id="analysis">Analysis</h3>
+<div id="20cffd8c" class="cell" data-message="true" data-execution_count="3">
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hw2_questions_files/figure-html/cell-4-output-1.png" width="668" height="449" class="figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Mean Number of Patents for Non-Customers: 3.62</code></pre>
+</div>
+</div>
+<p>The histogram for non-customers reveals a right-skewed distribution of patent counts, where a significant majority of non-customers have fewer patents, but there are outliers with higher numbers. This skewness suggests that while few non-customers are very innovative, most maintain a lower profile in terms of patent production. The mean number of patents for non-customers is approximately 3.62, underscoring the fact that non-customers generally have fewer patents.</p>
+<div id="c9df6297" class="cell" data-message="true" data-execution_count="4">
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hw2_questions_files/figure-html/cell-5-output-1.png" width="659" height="449" class="figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Mean Number of Patents for Customers: 4.09</code></pre>
+</div>
+</div>
+<p>In contrast, the histogram for customers also shows a right-skewed distribution but with a noticeable shift towards higher counts of patents. This indicates that customers are generally more active in patenting than non-customers. The mean number of patents for customers, at approximately 4.09, is higher than that of non-customers. This might imply that customer status could be associated with higher innovation levels or that entities with higher patent activities are more likely to be customers.</p>
 <p>Blueprinty customers are not selected at random. It may be important to account for systematic differences in the age and regional location of customers vs non-customers.</p>
 <p><em>todo: Compare regions and ages by customer status. What do you observe?</em></p>
+<div id="bc1025b5" class="cell" data-message="true" data-execution_count="5">
+<div class="cell-output cell-output-display">
+<pre><code>&lt;Figure size 768x576 with 0 Axes&gt;</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hw2_questions_files/figure-html/cell-6-output-2.png" width="601" height="440" class="figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="5">
+<pre><code>(26.691481197237145,
+ 24.1497461928934,
+ region      Midwest  Northeast  Northwest  South  Southwest
+ iscustomer                                                 
+ 0               207        488        171    171        266
+ 1                17        113         16     20         31)</code></pre>
+</div>
+</div>
+<section id="observations" class="level4">
+<h4 class="anchored" data-anchor-id="observations">Observations:</h4>
+<ul>
+<li>The Northeast region has the highest overall number of entities, both customers and non-customers.</li>
+<li>Customers form a smaller proportion of the total in each region, but the disparity in numbers between customers and non-customers varies by region.</li>
+</ul>
+<p>The younger average age of customers might indicate that younger entities (or individuals) are more likely to become customers, possibly due to newer businesses being more inclined to engage with the offerings. The regional analysis shows that while all regions have more non-customers than customers, the Northeast stands out with a relatively higher number of customers, suggesting regional variations in customer acquisition or market penetration strategies.</p>
+<p>These insights could be used to tailor regional marketing strategies or to explore further why younger demographics are more represented among customers.</p>
+</section>
 </section>
 <section id="estimation-of-simple-poisson-model" class="level3">
 <h3 class="anchored" data-anchor-id="estimation-of-simple-poisson-model">Estimation of Simple Poisson Model</h3>
@@ -218,8 +533,163 @@ window.Quarto = {
    ...
 }</code></pre>
 <p><em>todo: Use your function to plot lambda on the horizontal axis and the likelihood (or log-likelihood) on the vertical axis for a range of lambdas (use the observed number of patents as the input for Y).</em></p>
+<div id="ef1816f1" class="cell" data-message="true" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.special <span class="im">import</span> factorial</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Extracting the patent data</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>Y <span class="op">=</span> blueprinty[<span class="st">'patents'</span>].values</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Define a range for lambda, from slightly above 0 to a bit beyond the maximum observed value of patents</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>lambda_range <span class="op">=</span> np.linspace(<span class="fl">0.1</span>, Y.<span class="bu">max</span>() <span class="op">+</span> <span class="dv">5</span>, <span class="dv">300</span>)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Redefine the poisson log-likelihood function using scipy's factorial for vectorized operations</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> poisson_loglikelihood(lambda_, Y):</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.<span class="bu">sum</span>(<span class="op">-</span>lambda_ <span class="op">+</span> Y <span class="op">*</span> np.log(lambda_) <span class="op">-</span> np.log(factorial(Y)))</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Recalculate the log-likelihood for each lambda</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>log_likelihoods <span class="op">=</span> [poisson_loglikelihood(l, Y) <span class="cf">for</span> l <span class="kw">in</span> lambda_range]</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Plotting the log-likelihood vs lambda</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>plt.plot(lambda_range, log_likelihoods, label<span class="op">=</span><span class="st">'Log-Likelihood'</span>)</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Log-Likelihood of Poisson Model vs. Lambda'</span>)</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Lambda'</span>)</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Log-Likelihood'</span>)</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>plt.grid(<span class="va">True</span>)</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="hw2_questions_files/figure-html/cell-8-output-1.png" width="844" height="523" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<section id="observations-1" class="level4">
+<h4 class="anchored" data-anchor-id="observations-1">Observations:</h4>
+<ul>
+<li>Shape: The curve typically shows a peak, indicating the value of λ that maximizes the log-likelihood. This value can be considered as the most likely estimate of λ given the observed data.</li>
+</ul>
+</section>
+<section id="interpretation" class="level4">
+<h4 class="anchored">Interpretation:</h4>
+<ul>
+<li>The peak of the log-likelihood curve provides an insight into the most probable rate of patents per firm over the last 5 years, assuming a Poisson distribution. This graphical analysis is useful in understanding the behavior of the likelihood as λ changes and helps in choosing an appropriate λ for further statistical analysis or modeling.</li>
+</ul>
 <p><em>todo: If you’re feeling mathematical, take the first derivative of your likelihood or log-likelihood, set it equal to zero and solve for lambda. You will find lambda_mle is Ybar, which “feels right” because the mean of a Poisson distribution is lambda.</em></p>
+<p>
+To derive the Maximum Likelihood Estimator (MLE) for <i>λ</i> in a Poisson distribution, we begin with the log-likelihood function and find the value of <i>λ</i> that maximizes this function. The log-likelihood for the Poisson distribution given <i>Y</i> and <i>λ</i> is:
+</p>
+<p>
+<i>ℓ(λ) = ∑<sub>i=1</sub><sup>n</sup> (-λ + Y<sub>i</sub> · log(λ) - log(Y<sub>i</sub>!))</i>
+</p>
+<p>
+Where <i>n</i> is the number of observations.
+</p>
+<h4 class="anchored">
+First Derivative of the Log-Likelihood
+</h4>
+<p>
+To find the maximum, we take the derivative of the log-likelihood with respect to <i>λ</i> and set it to zero. The derivative is:
+</p>
+<p>
+<i>dℓ/dλ = ∑<sub>i=1</sub><sup>n</sup> (-1 + Y<sub>i</sub> / λ)</i>
+</p>
+<p>
+Setting this derivative equal to zero for maximization:
+</p>
+<p>
+<i>-n + ∑<sub>i=1</sub><sup>n</sup> Y<sub>i</sub> / λ = 0</i>
+</p>
+<p>
+<i>λ = (∑<sub>i=1</sub><sup>n</sup> Y<sub>i</sub>) / n</i>
+</p>
+<h4 class="anchored">
+Solution for λ
+</h4>
+<p>
+This result shows that the MLE for <i>λ</i>, <i>λ<sub>MLE</sub></i>, is the sample mean <i>̌Y</i> of the observed data:
+</p>
+<p>
+<i>λ<sub>MLE</sub> = ̌Y</i>
+</p>
+<p>
+This is intuitively satisfying as the mean of a Poisson distribution is <i>λ</i>, and the MLE estimates the parameter such that the observed mean is the most likely estimate under the assumed model.
+</p>
+<div id="be223dc3" class="cell" data-message="true" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate lambda MLE, which should be the mean of Y</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>lambda_mle <span class="op">=</span> Y.mean()</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>lambda_mle</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="8">
+<pre><code>3.6846666666666668</code></pre>
+</div>
+</div>
+<p>
+The calculated Maximum Likelihood Estimate (MLE) for <i>λ</i>, which is <i>λ<sub>MLE</sub></i>, is approximately 3.685. This confirms our derivation: the MLE of <i>λ</i> for a Poisson distribution is indeed the sample mean of the observed counts <i>Y</i>, representing the average number of patents awarded per firm over the last 5 years.
+</p>
 <p><em>todo: Find the MLE by optimizing your likelihood function with optim() in R or sp.optimize() in Python.</em></p>
+<div id="3e4d40b6" class="cell" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.optimize <span class="im">import</span> minimize</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Redefine the poisson log-likelihood function to accept lambda as the first argument</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> neg_poisson_loglikelihood(lambda_, Y):</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># We will use np.sum(np.log(factorial(Y))) which is a constant to avoid recomputation</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># as it does not affect the optimization process</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="op">-</span>np.<span class="bu">sum</span>(<span class="op">-</span>lambda_ <span class="op">+</span> Y <span class="op">*</span> np.log(lambda_)) <span class="op">+</span> np.<span class="bu">sum</span>(np.log(factorial(Y)))</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="co"># The initial guess for lambda could be the sample mean of Y, or just 1 as a neutral starting point</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>initial_lambda <span class="op">=</span> Y.mean()</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="co"># We will use the minimize function to find the MLE for lambda</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> minimize(neg_poisson_loglikelihood, initial_lambda, args<span class="op">=</span>(Y,))</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="co"># The result of the optimization will be stored in result.x</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>lambda_mle <span class="op">=</span> result.x[<span class="dv">0</span>]</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>lambda_mle, result.success  <span class="co"># Show the MLE and if the optimization was successful</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="9">
+<pre><code>(3.684666666666663, True)</code></pre>
+</div>
+</div>
+<h3 class="anchored" data-anchor-id="interpretation">
+Explanation
+</h3>
+<p>
+We used a Poisson regression model to understand the distribution of patents across different engineering firms over the last 5 years. The Poisson model is appropriate here because the number of patents is count data, typically non-negative integers, and we’re considering an interval of time.
+</p>
+<p>
+The Poisson distribution is characterized by its rate parameter, <i>λ</i>, which represents the average number of events (patents) in a given time frame. The key property of a Poisson distribution is that its mean and variance are both equal to <i>λ</i>.
+</p>
+<p>
+We aimed to estimate this <i>λ</i> using the method of Maximum Likelihood Estimation (MLE). The MLE is a statistical method for estimating the parameters of a model. It works by finding the parameter values that make the observed data most probable.
+</p>
+<h3 class="anchored">
+Mathematical Derivation
+</h3>
+<p>
+We derived mathematically that the MLE for <i>λ</i> is the sample mean (<i>̌Y</i>) of our observed patent counts. This derivation was based on setting the first derivative of the log-likelihood function to zero, solving for <i>λ</i>, and demonstrating that <i>λ<sub>MLE</sub></i> equates to the sample mean.
+</p>
+<h3 class="anchored">
+Numerical Optimization
+</h3>
+<p>
+We then used numerical optimization to confirm this result. Because Python’s optimization functions typically minimize rather than maximize, we minimized the negative of the log-likelihood function. The result from the <code>scipy.optimize</code> function confirmed that the estimated <i>λ</i> is indeed approximately equal to the sample mean, which validates our earlier mathematical derivation.
+</p>
+<h3 class="anchored">
+Interpretation
+</h3>
+<p>
+The interpretation of this result is that the most likely average rate of patent awards across all engineering firms is around 3.685 patents per firm over the last 5 years. This is an intuitive result because, in a Poisson distribution, the rate <i>λ</i> is the expected count per interval. Therefore, estimating <i>λ</i> as the average observed count aligns with our understanding of the distribution’s properties.
+</p>
+<p>
+Moreover, this value of <i>λ</i> could be used to predict the expected number of patent awards for similar engineering firms, under similar conditions, over a 5-year period. It also serves as a benchmark for comparing individual firm performance against the average.
+</p>
+<p>
+In practice, this Poisson model might be the basis for more complex analyses, such as Poisson regression models that relate <i>λ</i> to other explanatory variables (e.g., firm size, region, R&amp;D spending) to better understand the factors that influence patent output.
+</p>
+</section>
 </section>
 <section id="estimation-of-poisson-regression-model" class="level3">
 <h3 class="anchored" data-anchor-id="estimation-of-poisson-regression-model">Estimation of Poisson Regression Model</h3>
