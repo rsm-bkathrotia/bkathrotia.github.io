@@ -1,8 +1,7 @@
 ---
 title: "My Projects"
 listing: 
-    contents: 
-      - "projects/Assignment1/hw1_questions.qmd"
+    contents: projects
     type: grid
     sort: "date desc"
     categories: false

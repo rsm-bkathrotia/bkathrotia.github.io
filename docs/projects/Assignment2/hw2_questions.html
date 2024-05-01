@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Bansari Kathrotia">
-<meta name="dcterms.date" content="2024-04-29">
+<meta name="dcterms.date" content="2024-04-30">
 
 <title>Bansari’s Website - Poisson Regression Examples</title>
 <style>
@@ -221,7 +221,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">April 29, 2024</p>
+      <p class="date">April 30, 2024</p>
     </div>
   </div>
   
@@ -243,7 +243,7 @@ window.Quarto = {
 <section id="data" class="level3">
 <h3 class="anchored" data-anchor-id="data">Data</h3>
 <p><em>todo: Read in data.</em></p>
-<div id="071efca7" class="cell" data-message="false" data-execution_count="1">
+<div id="8961ec73" class="cell" data-message="false" data-execution_count="1">
 <div class="cell-output cell-output-display" data-execution_count="1">
 <div>
 <div>
@@ -357,7 +357,7 @@ window.Quarto = {
 </div>
 </div>
 </div>
-<div id="5ce80fb7" class="cell" data-message="true" data-execution_count="2">
+<div id="0a1cedb7" class="cell" data-message="true" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Drop the 'Unnamed: 0' column</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>blueprinty <span class="op">=</span> blueprinty.drop(columns<span class="op">=</span>[<span class="st">'Unnamed: 0'</span>])</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>blueprinty</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -466,7 +466,7 @@ window.Quarto = {
 </section>
 <section id="analysis" class="level3">
 <h3 class="anchored" data-anchor-id="analysis">Analysis</h3>
-<div id="20cffd8c" class="cell" data-message="true" data-execution_count="3">
+<div id="f7878cde" class="cell" data-message="true" data-execution_count="3">
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -479,7 +479,7 @@ window.Quarto = {
 </div>
 </div>
 <p>The histogram for non-customers reveals a right-skewed distribution of patent counts, where a significant majority of non-customers have fewer patents, but there are outliers with higher numbers. This skewness suggests that while few non-customers are very innovative, most maintain a lower profile in terms of patent production. The mean number of patents for non-customers is approximately 3.62, underscoring the fact that non-customers generally have fewer patents.</p>
-<div id="c9df6297" class="cell" data-message="true" data-execution_count="4">
+<div id="d048e6ec" class="cell" data-message="true" data-execution_count="4">
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -494,7 +494,7 @@ window.Quarto = {
 <p>In contrast, the histogram for customers also shows a right-skewed distribution but with a noticeable shift towards higher counts of patents. This indicates that customers are generally more active in patenting than non-customers. The mean number of patents for customers, at approximately 4.09, is higher than that of non-customers. This might imply that customer status could be associated with higher innovation levels or that entities with higher patent activities are more likely to be customers.</p>
 <p>Blueprinty customers are not selected at random. It may be important to account for systematic differences in the age and regional location of customers vs non-customers.</p>
 <p><em>todo: Compare regions and ages by customer status. What do you observe?</em></p>
-<div id="bc1025b5" class="cell" data-message="true" data-execution_count="5">
+<div id="fc176644" class="cell" data-message="true" data-execution_count="5">
 <div class="cell-output cell-output-display">
 <pre><code>&lt;Figure size 768x576 with 0 Axes&gt;</code></pre>
 </div>
@@ -533,7 +533,7 @@ window.Quarto = {
    ...
 }</code></pre>
 <p><em>todo: Use your function to plot lambda on the horizontal axis and the likelihood (or log-likelihood) on the vertical axis for a range of lambdas (use the observed number of patents as the input for Y).</em></p>
-<div id="ef1816f1" class="cell" data-message="true" data-execution_count="7">
+<div id="b7497d20" class="cell" data-message="true" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.special <span class="im">import</span> factorial</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Extracting the patent data</span></span>
@@ -618,7 +618,7 @@ This result shows that the MLE for <i>λ</i>, <i>λ<sub>MLE</sub></i>, is the sa
 <p>
 This is intuitively satisfying as the mean of a Poisson distribution is <i>λ</i>, and the MLE estimates the parameter such that the observed mean is the most likely estimate under the assumed model.
 </p>
-<div id="be223dc3" class="cell" data-message="true" data-execution_count="8">
+<div id="8eb42f59" class="cell" data-message="true" data-execution_count="8">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate lambda MLE, which should be the mean of Y</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>lambda_mle <span class="op">=</span> Y.mean()</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -631,7 +631,7 @@ This is intuitively satisfying as the mean of a Poisson distribution is <i>λ</i
 The calculated Maximum Likelihood Estimate (MLE) for <i>λ</i>, which is <i>λ<sub>MLE</sub></i>, is approximately 3.685. This confirms our derivation: the MLE of <i>λ</i> for a Poisson distribution is indeed the sample mean of the observed counts <i>Y</i>, representing the average number of patents awarded per firm over the last 5 years.
 </p>
 <p><em>todo: Find the MLE by optimizing your likelihood function with optim() in R or sp.optimize() in Python.</em></p>
-<div id="3e4d40b6" class="cell" data-execution_count="9">
+<div id="abac778d" class="cell" data-execution_count="9">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.optimize <span class="im">import</span> minimize</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Redefine the poisson log-likelihood function to accept lambda as the first argument</span></span>

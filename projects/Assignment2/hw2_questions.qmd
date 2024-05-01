@@ -296,7 +296,79 @@ poisson_regression_likelihood <- function(beta, Y, X){
 
 _todo: Use your function along with R's optim() or Python's sp.optimize() to find the MLE vector and the Hessian of the Poisson model with covariates. Specifically, the first column of X should be all 1's to enable a constant term in the model, and the subsequent columns should be age, age squared, binary variables for all but one of the regions, and the binary customer variable. Use the Hessian to find standard errors of the beta parameter estimates and present a table of coefficients and standard errors._
 
+```{python}
+
+import pandas as pd
+import numpy as np
+
+# Assuming blueprinty is your DataFrame
+# Add a constant column for the intercept
+blueprinty['constant'] = 1
+
+# Calculate age squared
+blueprinty['age_squared'] = blueprinty['age'] ** 2
+
+# Generate region dummies, omitting the first region as the baseline
+region_dummies = pd.get_dummies(blueprinty['region'], drop_first=True)
+blueprinty = pd.concat([blueprinty, region_dummies], axis=1)
+
+# Define covariates including dummy variables for region and the constant
+covariates = ['constant', 'age', 'age_squared', 'iscustomer'] + list(region_dummies.columns)
+
+```
+
+```{python}
+
+X = blueprinty[covariates].values
+Y = blueprinty['patents'].values
+
+def neg_log_likelihood(beta, X, Y):
+    lambda_ = np.exp(X @ beta)
+    return -np.sum(Y * np.log(lambda_) - lambda_ - np.log(factorial(Y)))
+
+from scipy.optimize import minimize
+
+initial_beta = np.zeros(X.shape[1])
+result = minimize(neg_log_likelihood, initial_beta, args=(X, Y), method='BFGS')
+
+Hessian_inv = result.hess_inv
+std_errors = np.sqrt(np.diag(Hessian_inv))
+
+```
+
+```{python}
+
+beta_hat = result.x
+
+coefficients_table = pd.DataFrame({
+    'Coefficient': beta_hat,
+    'Standard Error': std_errors
+}, index=covariates)
+
+print(coefficients_table)
+
+```
+
+```{python}
+print("Shape of X:", X.shape)  # Number of parameters in the model
+print("Covariates used:", covariates)
+print("Number of coefficients estimated:", len(result.x))  # Should match number of columns in X
+
+```
+
+```{python}
+
+print(blueprinty.columns)
+
+```
+
+```{python}
+
+
+```
 _todo: Check your results using R's glm() function or Python sm.GLM() function._
+
+
 
 _todo: Interpret the results. What do you conclude about the effect of Blueprinty's software on patent success?_
 
