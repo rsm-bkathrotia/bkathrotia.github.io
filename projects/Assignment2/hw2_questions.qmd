@@ -245,6 +245,9 @@ _todo: Find the MLE by optimizing your likelihood function with optim() in R or 
 
 ```{python}
 
+#| echo: false
+#| message: true
+
 from scipy.optimize import minimize
 
 # Redefine the poisson log-likelihood function to accept lambda as the first argument
@@ -298,10 +301,11 @@ _todo: Use your function along with R's optim() or Python's sp.optimize() to fin
 
 ```{python}
 
-import pandas as pd
 import numpy as np
-from scipy.optimize import minimize
+import pandas as pd
 from scipy.special import gammaln
+from sklearn.preprocessing import StandardScaler
+from scipy.optimize import minimize
 
 # Add a constant column for the intercept
 blueprinty['constant'] = 1
@@ -309,49 +313,94 @@ blueprinty['constant'] = 1
 # Calculate age squared
 blueprinty['age_squared'] = blueprinty['age'] ** 2
 
+# Create dummy variables for the 'region' and drop the original 'region' column
 region_dummies = pd.get_dummies(blueprinty['region'], drop_first=True)
+print(region_dummies)
 blueprinty = pd.concat([blueprinty.drop(columns=['region'], errors='ignore'), region_dummies], axis=1)
+
 # Check if all expected columns are present
 print("Columns in dataframe:", blueprinty.columns)
-
-# Define the log-likelihood function for Poisson regression
-def poisson_regression_loglikelihood(beta, Y, X):
-    lambda_i = np.exp(np.dot(X, beta))
-    log_likelihood = np.sum(Y * np.log(lambda_i) - lambda_i - gammaln(Y + 1))
-    return -log_likelihood
-
-# Define covariates, ensuring no duplication
-covariates = ['constant', 'age', 'age_squared', 'iscustomer'] + list(region_dummies.columns)
-
-# Construct X and Y matrices if not already done
-X = blueprinty[covariates].values
-Y = blueprinty['patents'].values
-
-# Optional: Standardize features that are not binary or dummy variables
-from sklearn.preprocessing import StandardScaler
-scaler = StandardScaler()
-X_scaled = X.copy()
-X_scaled[:, 1:3] = scaler.fit_transform(X[:, 1:3])  # Assuming age and age_squared are the 2nd and 3rd features
-
-# Initial values for the parameters
-initial_beta = np.zeros(X_scaled.shape[1])
-
-# Optimization using the minimize function from scipy
-result = minimize(poisson_regression_loglikelihood, initial_beta, args=(Y, X_scaled), method='L-BFGS-B', options={'disp': True})
-
-if result.success:
-    print("Optimization succeeded.")
-    beta_hat = result.x
-    print("Estimated coefficients:", beta_hat)
-else:
-    print("Optimization failed:", result.message)
-
 ```
 
 ```{python}
 
+# Define the log-likelihood function for Poisson regression
+def poisson_regression_loglikelihood(beta, Y, X):
+    # Debugging shapes
+    print("Shape of beta:", beta.shape)
+    print("Shape of X:", X.shape)
 
+    # Compute product of X and beta
+    product = np.dot(X, beta)
+    print("Product shape:", product.shape)
+
+    # Apply exponential function with clipping to avoid overflow
+    lambda_i = np.exp(np.clip(product, -np.inf, 20))
+
+    # Compute log-likelihood
+    log_likelihood = np.sum(Y * np.log(lambda_i) - lambda_i - gammaln(Y + 1))
+    return -log_likelihood
 ```
+
+```{python}
+
+# Define covariates and construct X and Y matrices
+covariates = ['constant', 'age', 'age_squared', 'iscustomer'] + list(region_dummies.columns)
+X = blueprinty[covariates].values
+Y = blueprinty['patents'].values
+```
+
+```{python}
+# Define the log-likelihood function for Poisson regression
+def neg_log_likelihood(beta, Y, X):
+    product = np.dot(X, beta)
+    lambda_i = np.exp(np.clip(product, -np.inf, 20))  # Avoid overflow
+    return -np.sum(Y * np.log(lambda_i) - lambda_i - gammaln(Y + 1))
+
+# Prepare data for regression
+covariates = ['constant', 'age', 'age_squared', 'iscustomer'] + list(region_dummies.columns)
+X = blueprinty[covariates].values
+Y = blueprinty['patents'].values
+
+
+# Scale features except for the intercept
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X[:, 1:])  # Assuming first column is intercept
+X_scaled = np.hstack((np.ones((X.shape[0], 1)), X_scaled))  # Add intercept back
+
+# Initial guess for beta - small random values near zero
+beta_initial = np.random.normal(loc=0.0, scale=0.1, size=X_scaled.shape[1])
+
+# Run the optimization to find the MLE for beta
+result = minimize(
+    neg_log_likelihood, beta_initial, args=(Y, X_scaled),
+    method='L-BFGS-B', options={'disp': True, 'maxiter': 500}
+)
+```
+
+
+
+### Interpretation of the Optimization Process
+
+*   **Function Value (F)**: The final function value, F\=3275.85F = 3275.85F\=3275.85, represents the negative log-likelihood at the optimal parameters. The lower this value, the better the fit of the model to your data, assuming the model structure is appropriate.
+*   **Projected Gradient (Projg)**: The norm of the final projected gradient being 5.543×10−25.543 \\times 10^{-2}5.543×10−2 is quite small. This suggests that the optimization algorithm has effectively minimized the function, as changes in the parameter values would no longer significantly decrease the function value.
+*   **Convergence Message**: "CONVERGENCE: REL\_REDUCTION\_OF\_F\_<=\_FACTR\*EPSMCH" indicates that the relative reduction in the function value has reached a threshold that is considered sufficient for convergence, based on the precision of the machine. This means the optimization has likely found a stable point that is close to the true minimum.
+
+### Estimated Coefficients
+
+The coefficients you obtained:
+
+*   **Intercept (Constant)**: 1.2151.2151.215
+*   **Age**: 1.0461.0461.046
+*   **Age Squared**: −1.141\-1.141−1.141
+*   **Is Customer**: 0.1180.1180.118
+*   **Region Variables**: These include slight adjustments for regions which seem to have small but potentially meaningful impacts compared to a baseline region (omitted in your dummy coding).
+
+### Interpreting Coefficients
+
+*   **Age and Age Squared**: The positive coefficient for age and the negative coefficient for age squared suggest a quadratic relationship. Initially, the number of patents increases with age but starts to decrease as age squared becomes more influential. This could indicate that there’s an optimal age for productivity in terms of patents, beyond which it declines.
+*   **Is Customer**: The positive coefficient for being a customer (0.1180.1180.118) implies that customers, on average, have a higher expected count of patents, holding other factors constant. This could be interpreted as a beneficial effect of being a customer on patent output.
+*   **Regional Effects**: The coefficients for the regions adjust the baseline expectation of patent counts relative to the omitted region. These effects are relatively small, indicating that while there are regional differences, they are not as pronounced as the effects of age or customer status.
 
 _todo: Check your results using R's glm() function or Python sm.GLM() function._
 
