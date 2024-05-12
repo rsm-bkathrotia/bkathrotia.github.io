@@ -1,6 +1,6 @@
 ---
 title: "Poisson Regression Examples"
-author: "Your Name"
+author: "Bansari Kathrotia"
 date: today
 callout-appearance: minimal # this hides the blue "i" icon on .callout-notes
 editor_options: 
@@ -8,7 +8,7 @@ editor_options:
 ---
 
 
-This assignment uses uses the MNL model to analyze (1) yogurt purchase data made by consumers at a retail location, and (2) conjoint data about consumer preferences for minivans.
+This assignment uses the MNL model to analyze (1) yogurt purchase data made by consumers at a retail location, and (2) conjoint data about consumer preferences for minivans.
 
 
 ## 1. Estimating Yogurt Preferences
@@ -54,6 +54,38 @@ We will use the `yogurt_data` dataset, which provides anonymized consumer identi
 
 _todo: import the data, maybe show the first few rows, and describe the data a bit._
 
+```{python}
+
+#| echo: false
+#| message: false
+
+import pandas as pd
+import numpy as np
+
+```
+
+```{python}
+
+#| echo: false
+#| message: true
+
+yogurt = pd.read_csv("yogurt_data.csv")
+yogurt
+```
+
+The dataset contains the following columns:
+
+*   `id`: Unique identifier for each consumer.
+*   `y1` to `y4`: Binary indicators showing which of the four yogurts was chosen by the consumer. Only one of these columns will have a value of `1` per row, indicating the chosen product.
+*   `f1` to `f4`: Binary indicators showing whether each of the four yogurts was featured (advertised) in the store at the time of the purchase.
+*   `p1` to `p4`: Numeric values representing the price per ounce of each of the four yogurts.
+
+From the preview of the data:
+
+*   In the first row, consumer with `id` 1 purchased yogurt 4 (as indicated by `y4` = 1) at a price of 0.079 per ounce. None of the yogurts were featured.
+*   Subsequent rows show similar data for other consumers, indicating their choices and the conditions (price and whether the product was featured) under each product.
+
+
 Let the vector of product features include brand dummy variables for yogurts 1-3 (we'll omit a dummy for product 4 to avoid multi-collinearity), a dummy variable to indicate if a yogurt was featured, and a continuous variable for the yogurts' prices:  
 
 $$ x_j' = [\mathbbm{1}(\text{Yogurt 1}), \mathbbm{1}(\text{Yogurt 2}), \mathbbm{1}(\text{Yogurt 3}), X_f, X_p] $$
@@ -64,13 +96,143 @@ What we would like to do is reorganize the data from a "wide" shape with $n$ row
 
 _todo: reshape and prep the data_
 
+```{python}
+
+#| echo: false
+#| message: false
+
+# Define the columns corresponding to choices, features, and prices
+choice_columns = [f'y{j}' for j in range(1, 5)]
+feature_columns = [f'f{j}' for j in range(1, 5)]
+price_columns = [f'p{j}' for j in range(1, 5)]
+
+```
+
+```{python}
+#| echo: false
+#| message: false
+
+# Convert wide format to long format using the correct dataset name "yogurt"
+long_data_final = pd.DataFrame()
+
+# Loop through each product to create the long format data
+for j in range(1, 5):
+    temp_df = yogurt[['id', f'y{j}', f'f{j}', f'p{j}']].copy()
+    temp_df.columns = ['id', 'choice', 'featured', 'price']
+    temp_df['product'] = j
+    long_data_final = pd.concat([long_data_final, temp_df], ignore_index=True)
+
+```
+
+```{python}
+
+#| echo: false
+#| message: true
+
+# Adding dummy variables for the first three products
+long_data_final['brand1'] = (long_data_final['product'] == 1).astype(int)
+long_data_final['brand2'] = (long_data_final['product'] == 2).astype(int)
+long_data_final['brand3'] = (long_data_final['product'] == 3).astype(int)
+
+# Display the reshaped data
+long_data_final.head()
+```
+The dataset has been reshaped into the long format using the dataset named "yogurt". Here is the structure of the transformed data:
+
+*   `id`: Consumer identifier.
+*   `choice`: Indicates whether the consumer chose this product (1 if chosen, 0 otherwise).
+*   `featured`: Indicates whether the product was featured (1 if featured, 0 otherwise).
+*   `price`: Price per ounce of the product.
+*   `product`: Product number (1 through 4).
+*   `brand1`, `brand2`, `brand3`: Dummy variables for the first three products, with the fourth product omitted to avoid multicollinearity.
+
 
 ### Estimation
 
 _todo: Code up the log-likelihood function._
 
+1.  **Utility Function**: Calculates the utility for each product based on the beta coefficients and the features in the dataset.
+2.  **Probability Calculation**: Determines the probabilities of choosing each product by a consumer, factoring in the utilities of all available products for normalization.
+3.  **Log-Likelihood**: Computes the log of these probabilities where the product was actually chosen (where `choice == 1`) and sums these values to obtain the log-likelihood for the dataset given the model parameters.
+
+```{python}
+
+#| echo: false
+#| message: true
+
+import numpy as np
+import pandas as pd
+
+# Defining the utility function
+def utility_function(data, beta):
+    # Utility is a linear combination of the features
+    # beta: [beta_brand1, beta_brand2, beta_brand3, beta_featured, beta_price]
+    utility = (data['brand1'] * beta[0] +
+               data['brand2'] * beta[1] +
+               data['brand3'] * beta[2] +
+               data['featured'] * beta[3] +
+               data['price'] * beta[4])
+    return utility
+
+# Function to calculate the probabilities
+def calculate_probabilities(data, beta):
+    data['utility'] = utility_function(data, beta)
+    # Calculating the exponential of utilities for each consumer
+    max_util = data.groupby('id')['utility'].transform('max')  # Stability improvement
+    data['exp_utilities'] = np.exp(data['utility'] - max_util)  # Subtracting max for numerical stability
+    sum_exp_utilities = data.groupby('id')['exp_utilities'].transform('sum')
+    data['probability'] = data['exp_utilities'] / sum_exp_utilities
+    return data
+
+# Function to calculate the log-likelihood
+def log_likelihood(data, beta):
+    data = calculate_probabilities(data, beta)
+    # Only taking logs of probabilities where choice is 1
+    log_probs = np.log(data.loc[data['choice'] == 1, 'probability'])
+    return log_probs.sum()
+
+# Example usage with hypothetical beta coefficients
+beta_example = [0.5, -0.3, 0.2, 0.1, -0.05]
+# Assuming 'long_data_final' is your DataFrame after reshaping and adding dummy variables
+log_likelihood_value = log_likelihood(long_data_final, beta_example)
+print("Log-Likelihood Value:", log_likelihood_value)
+
+```
+
 _todo: Use `optim()` in R or `optimize()` in Python to find the MLEs for the 5 parameters ($\beta_1, \beta_2, \beta_3, \beta_f, \beta_p$).  (Hint: you should find 2 positive and 1 negative product intercepts, a small positive coefficient estimate for featured, and a large negative coefficient estimate for price.)_
 
+```{python}
+
+#| echo: false
+#| message: true
+
+from scipy.optimize import minimize
+
+# Define the negative log-likelihood function
+def negative_log_likelihood(beta, data):
+    return -log_likelihood(data, beta)
+
+# Initial guess for beta coefficients
+initial_beta = [0.1, 0.1, 0.1, 0.1, -0.1]
+
+# Define bounds for the parameters
+bounds = [(None, None), (None, None), (None, None), (0, None), (None, 0)]
+```
+
+```{python}
+
+#| echo: true
+#| message: true
+
+# Optimization to find the MLE of the beta coefficients
+result = minimize(negative_log_likelihood, initial_beta, args=(long_data_final,), 
+                  method='L-BFGS-B', bounds=bounds)
+
+# Print the optimization results
+print("Optimization Success:", result.success)
+print("Estimated beta coefficients:", result.x)
+
+```
 
 ### Discussion
 
@@ -78,13 +240,155 @@ We learn...
 
 _todo: interpret the 3 product intercepts (which yogurt is most preferred?)._
 
+Interpreting the three product intercepts from the estimated beta coefficients for Brands 1, 2, and 3, we can gauge consumer preferences among the yogurt options relative to the baseline (Brand 4, which does not have a specific intercept and is implied as zero in the model). Here’s how to interpret the intercepts:
+
+1.  **Beta for Brand 1 (`beta_1`)**: 1.388
+    
+    *   This positive intercept suggests that, holding other factors constant (such as price and whether the product was featured), Brand 1 is preferred over Brand 4. The higher positive value indicates a strong preference for this brand.
+2.  **Beta for Brand 2 (`beta_2`)**: 0.644
+    
+    *   Similarly, this positive intercept indicates a preference for Brand 2 over Brand 4, though the preference is less strong compared to Brand 1. Brand 2 is still preferred but not as much as Brand 1.
+3.  **Beta for Brand 3 (`beta_3`)**: −3.086
+    
+    *   The negative value of this intercept indicates that Brand 3 is less preferred compared to Brand 4. This substantial negative value suggests a strong aversion to Brand 3 relative to the other options.
+
+### Which yogurt is most preferred?
+
+Based on the magnitude and direction of the beta coefficients:
+
+*   **Brand 1** is the most preferred yogurt among the options. It has the highest positive intercept, indicating the strongest preference relative to the baseline (Brand 4).
+*   **Brand 2** is also preferred over the baseline but to a lesser extent than Brand 1.
+*   **Brand 3** is the least preferred, with a significant negative intercept indicating a strong preference against it compared to Brand 4.
+
+This interpretation can help in strategic decisions related to marketing and product placement, such as focusing promotional efforts on Brands 1 and 2, considering price adjustments or rebranding for Brand 3, and understanding the competitive position of Brand 4 as a potentially neutral or fallback option.
+
+
 _todo: use the estimated price coefficient as a dollar-per-util conversion factor. Use this conversion factor to calculate the dollar benefit between the most-preferred yogurt (the one with the highest intercept) and the least preferred yogurt (the one with the lowest intercept). This is a per-unit monetary measure of brand value._
+
+*   **Identify the most and least preferred yogurts**:
+    
+    *   Most preferred: Brand 1 (intercept = 1.388)
+    *   Least preferred: Brand 3 (intercept = -3.086)
+*   **Calculate the difference in utilities** between the most preferred and least preferred yogurts:
+    
+*   **Use the price coefficient as a conversion factor**:
+    
+    *   Price coefficient (`beta_p`): −37.058
+    *   The price coefficient's magnitude indicates the decrease in the utility of purchasing a yogurt per dollar increase in its price. Therefore, it acts as a conversion factor from utility to dollar value.
+
+```{python}
+#| echo: false
+#| message: true
+
+# Calculated difference in utility from the coefficients for Brand 1 and Brand 3
+utility_difference = 1.388 - (-3.086)
+
+# Price coefficient
+price_coefficient = -37.058
+
+# Convert utility to dollar value using the price coefficient
+dollar_value_per_util = 1 / price_coefficient
+
+```
+
+```{python}
+
+#| echo: true
+#| message: true
+
+# Calculate the dollar benefit
+dollar_benefit = utility_difference * dollar_value_per_util
+dollar_benefit
+
+```
+
+The calculated dollar benefit between the most preferred yogurt (Brand 1) and the least preferred yogurt (Brand 3) is approximately \-$0.121 per unit. This indicates that consumers might be willing to pay about 12 cents more per unit for Brand 1 over Brand 3 due to their difference in utility, based on the model estimates.
+
+This negative sign might initially seem counterintuitive, but it reflects how much less consumers would be willing to pay for the less preferred option (Brand 3). In other words, Brand 1 has a higher inherent value of about 12 cents per unit over Brand 3 in the eyes of consumers.
+
+This monetary measure effectively quantifies the brand value in dollar terms based on consumer preferences modeled by the MNL. This insight can be leveraged for pricing strategies and marketing efforts to enhance product positioning and profitability.
 
 One benefit of the MNL model is that we can simulate counterfactuals (eg, what if the price of yogurt 1 was $0.10/oz instead of $0.08/oz).
 
 _todo: calculate the market shares in the market at the time the data were collected.  Then, increase the price of yogurt 1 by $0.10 and use your fitted model to predict p(y|x) for each consumer and each product (this should be a matrix of $N \times 4$ estimated choice probabilities.  Take the column averages to get the new, expected market shares that result from the $0.10 price increase to yogurt 1.  Do the yogurt 1 market shares decrease?_
 
+To calculate the market shares and predict the changes in market share due to a price increase for Yogurt 1,
 
+*   **Calculate Current Market Shares**:
+    
+    *   Count the number of times each product was chosen and divide by the total number of observations.
+*   **Simulate the Effect of a Price Increase for Yogurt 1**:
+    
+    *   Increase the price of Yogurt 1 by $0.10 and use the fitted model to estimate the choice probabilities for each product and each consumer.
+    *   Calculate the expected market shares by taking the average of the choice probabilities across all consumers for each product.
+
+```{python}
+#| echo: true
+#| message: true
+
+# Calculate the current market shares
+current_market_shares = long_data_final.groupby('product')['choice'].mean()
+print("Current Market Shares:", current_market_shares)
+
+```
+
+```{python}
+
+#| echo: false
+#| message: true
+
+# Function to update the price of Yogurt 1 and calculate new probabilities
+def predict_new_market_shares(data, beta, price_increase=0.10):
+    # Create a copy to avoid modifying the original data
+    modified_data = data.copy()
+    
+    # Apply price increase to Yogurt 1
+    modified_data.loc[modified_data['product'] == 1, 'price'] += price_increase
+    
+    # Calculate new choice probabilities
+    modified_data = calculate_probabilities(modified_data, beta)
+    
+    # Calculate new market shares by averaging choice probabilities by product
+    new_market_shares = modified_data.groupby('product')['probability'].mean()
+    return new_market_shares
+
+```
+
+```{python}
+
+#| echo: true
+#| message: true
+
+# Call the function with the original data and fitted beta coefficients
+new_market_shares = predict_new_market_shares(long_data_final, result.x)
+print("New Market Shares After Price Increase:", new_market_shares)
+```
+
+Based on the results provided:
+
+### Current Market Shares:
+
+*   **Yogurt 1**: 34.2%
+*   **Yogurt 2**: 40.1%
+*   **Yogurt 3**: 2.9%
+*   **Yogurt 4**: 22.8%
+
+### New Market Shares After a $0.10 Price Increase to Yogurt 1:
+
+*   **Yogurt 1**: 2.1%
+*   **Yogurt 2**: 59.1%
+*   **Yogurt 3**: 4.4%
+*   **Yogurt 4**: 34.4%
+
+### Analysis:
+
+*   **Yogurt 1 Market Share**: The market share for Yogurt 1 drastically decreases from 34.2% to 2.1%. This significant reduction clearly indicates that the price sensitivity for Yogurt 1 is quite high, and even a modest price increase leads to a substantial shift in consumer preferences away from this product.
+*   **Shifts to Other Products**: The market shares of Yogurt 2, 3, and 4 all increase. Yogurt 2 benefits the most, with its market share increasing by nearly 19 percentage points. This suggests that consumers consider Yogurt 2 a close substitute for Yogurt 1, switching to it when Yogurt 1 becomes more expensive.
+*   **Yogurt 3 and 4**: Even though Yogurt 3 had a very low initial market share, it sees a relative increase, suggesting some consumers might switch to lower preference options if their first choice becomes less economically viable. Yogurt 4 also sees a notable increase in market share.
+
+### Conclusion:
+
+The $0.10 price increase for Yogurt 1 drastically reduces its market share, confirming the price sensitivity and showing a clear preference shift among consumers to other available options, particularly Yogurt 2. This demonstrates the importance of pricing strategies in competitive markets and highlights the value of using such models for predictive analytics in marketing and pricing decisions.
 
 
 ## 2. Estimating Minivan Preferences
