@@ -52,7 +52,6 @@ $$ \ell_n(\beta) = \sum_{i=1}^n \sum_{j=1}^J \delta_{ij} \log(\mathbb{P}_i(j)) $
 
 We will use the `yogurt_data` dataset, which provides anonymized consumer identifiers (`id`), a vector indicating the chosen product (`y1`:`y4`), a vector indicating if any products were "featured" in the store as a form of advertising (`f1`:`f4`), and the products' prices (`p1`:`p4`). For example, consumer 1 purchased yogurt 4 at a price of 0.079/oz and none of the yogurts were featured/advertised at the time of consumer 1's purchase.  Consumers 2 through 7 each bought yogurt 2, etc.
 
-_todo: import the data, maybe show the first few rows, and describe the data a bit._
 
 ```{python}
 
@@ -94,7 +93,7 @@ The "hard part" of the MNL likelihood function is organizing the data, as we nee
 
 What we would like to do is reorganize the data from a "wide" shape with $n$ rows and multiple columns for each covariate, to a "long" shape with $n \times J$ rows and a single column for each covariate.  As part of this re-organization, we'll add binary variables to indicate the first 3 products; the variables for featured and price are included in the dataset and simply need to be "pivoted" or "melted" from wide to long.  
 
-_todo: reshape and prep the data_
+Let's reshape the dataset for analysis:
 
 ```{python}
 
@@ -137,6 +136,7 @@ long_data_final['brand3'] = (long_data_final['product'] == 3).astype(int)
 # Display the reshaped data
 long_data_final.head()
 ```
+
 The dataset has been reshaped into the long format using the dataset named "yogurt". Here is the structure of the transformed data:
 
 *   `id`: Consumer identifier.
@@ -149,7 +149,6 @@ The dataset has been reshaped into the long format using the dataset named "yogu
 
 ### Estimation
 
-_todo: Code up the log-likelihood function._
 
 1.  **Utility Function**: Calculates the utility for each product based on the beta coefficients and the features in the dataset.
 2.  **Probability Calculation**: Determines the probabilities of choosing each product by a consumer, factoring in the utilities of all available products for normalization.
@@ -199,7 +198,7 @@ print("Log-Likelihood Value:", log_likelihood_value)
 
 ```
 
-_todo: Use `optim()` in R or `optimize()` in Python to find the MLEs for the 5 parameters ($\beta_1, \beta_2, \beta_3, \beta_f, \beta_p$).  (Hint: you should find 2 positive and 1 negative product intercepts, a small positive coefficient estimate for featured, and a large negative coefficient estimate for price.)_
+Optimizin gthe model to find the MLEs for the 5 parameters ($\beta_1, \beta_2, \beta_3, \beta_f, \beta_p$).  (Hint: you should find 2 positive and 1 negative product intercepts, a small positive coefficient estimate for featured, and a large negative coefficient estimate for price.)
 
 ```{python}
 
@@ -238,9 +237,7 @@ print("Estimated beta coefficients:", result.x)
 
 We learn...
 
-_todo: interpret the 3 product intercepts (which yogurt is most preferred?)._
-
-Interpreting the three product intercepts from the estimated beta coefficients for Brands 1, 2, and 3, we can gauge consumer preferences among the yogurt options relative to the baseline (Brand 4, which does not have a specific intercept and is implied as zero in the model). Here’s how to interpret the intercepts:
+From the three product intercepts from the estimated beta coefficients for Brands 1, 2, and 3, we can gauge consumer preferences among the yogurt options relative to the baseline (Brand 4, which does not have a specific intercept and is implied as zero in the model). Here’s how to interpret the intercepts:
 
 1.  **Beta for Brand 1 (`beta_1`)**: 1.388
     
@@ -262,8 +259,6 @@ Based on the magnitude and direction of the beta coefficients:
 
 This interpretation can help in strategic decisions related to marketing and product placement, such as focusing promotional efforts on Brands 1 and 2, considering price adjustments or rebranding for Brand 3, and understanding the competitive position of Brand 4 as a potentially neutral or fallback option.
 
-
-_todo: use the estimated price coefficient as a dollar-per-util conversion factor. Use this conversion factor to calculate the dollar benefit between the most-preferred yogurt (the one with the highest intercept) and the least preferred yogurt (the one with the lowest intercept). This is a per-unit monetary measure of brand value._
 
 *   **Identify the most and least preferred yogurts**:
     
@@ -310,7 +305,6 @@ This monetary measure effectively quantifies the brand value in dollar terms bas
 
 One benefit of the MNL model is that we can simulate counterfactuals (eg, what if the price of yogurt 1 was $0.10/oz instead of $0.08/oz).
 
-_todo: calculate the market shares in the market at the time the data were collected.  Then, increase the price of yogurt 1 by $0.10 and use your fitted model to predict p(y|x) for each consumer and each product (this should be a matrix of $N \times 4$ estimated choice probabilities.  Take the column averages to get the new, expected market shares that result from the $0.10 price increase to yogurt 1.  Do the yogurt 1 market shares decrease?_
 
 To calculate the market shares and predict the changes in market share due to a price increase for Yogurt 1,
 
@@ -396,25 +390,156 @@ The $0.10 price increase for Yogurt 1 drastically reduces its market share, conf
 
 ### Data
 
-_todo: download the dataset from here:_ http://goo.gl/5xQObB 
+```{python}
 
-_todo: describe the data a bit. How many respondents took the conjoint survey?  How many choice tasks did each respondent complete?  How many alternatives were presented on each choice task? For each alternative._
+#| echo: false
+#| message: true
+
+import statsmodels.api as sm
+
+conjoint_data = pd.read_csv("rintro-chapter13conjoint.csv")
+conjoint_data 
+```
+
+The dataset `rintro-chapter13conjoint.csv` appears to contain data from a conjoint analysis, typically used to gauge consumer preferences across different product features. Here's a breakdown of the columns:
+
+*   `resp.id`: Identifier for respondents.
+*   `ques`: Question or scenario number.
+*   `alt`: Alternative options presented within each question.
+*   `carpool`: Indicates if the option includes a carpool feature (yes/no).
+*   `seat`: Number of seats.
+*   `cargo`: Cargo space.
+*   `eng`: Type of engine (e.g., 'gas' for gasoline, 'hyb' for hybrid).
+*   `price`: Price in thousands of dollars.
+*   `choice`: Binary indicator of whether the respondent chose this alternative (1 for chosen, 0 for not chosen).
+
+
+```{python}
+#| echo: false
+#| message: true
+
+# Number of unique respondents
+num_respondents = conjoint_data['resp.id'].nunique()
+
+# Number of choice tasks per respondent
+tasks_per_respondent = conjoint_data.groupby('resp.id')['ques'].nunique()
+
+# Number of alternatives per choice task (assuming all respondents faced the same task structure)
+alternatives_per_task = conjoint_data.groupby(['resp.id', 'ques'])['alt'].nunique().mode()[0]
+
+```
+
+```{python}
+#| echo: true
+#| message: true
+
+num_respondents, tasks_per_respondent.describe(), alternatives_per_task
+
+```
+
+Here's a summary of the dataset based on the analysis:
+
+1.  **Number of Respondents**: There are 200 unique respondents who participated in the conjoint survey.
+    
+2.  **Choice Tasks Per Respondent**:
+    
+    *   Each respondent completed 15 choice tasks.
+    *   This is consistent across all respondents, as indicated by the lack of variability (standard deviation is 0).
+3.  **Alternatives Presented in Each Choice Task**:
+    
+    *   Each choice task presented 3 alternatives to the respondents.
+    *   This number is consistent across all tasks and respondents, as shown by the uniform count and lack of variability.
+
 
 The attributes (levels) were number of seats (6,7,8), cargo space (2ft, 3ft), engine type (gas, hybrid, electric), and price (in thousands of dollars).
 
 
 ### Model
 
-_todo: estimate a MNL model omitting the following levels to avoide multicollinearity (6 seats, 2ft cargo, and gas engine). Include price as a continuous variable. Show a table of coefficients and standard errors.  You may use your own likelihood function from above, or you may use a function from a package/library to perform the estimation._  
+Estimating a MNL model omitting the following levels to avoide multicollinearity (6 seats, 2ft cargo, and gas engine). Include price as a continuous variable. Show a table of coefficients and standard errors.  You may use your own likelihood function from above, or you may use a function from a package/library to perform the estimation.
+
+```{python}
+#| echo: false
+#| message: True
+
+conjoint_data['carpool'] = conjoint_data['carpool'].map({'yes': 1, 'no': 0})
+conjoint_data = pd.get_dummies(conjoint_data, columns=['seat', 'cargo', 'eng'], drop_first=True)
+
+# Convert boolean columns to integer type
+conjoint_data['seat_7'] = conjoint_data['seat_7'].astype(int)
+conjoint_data['seat_8'] = conjoint_data['seat_8'].astype(int)
+conjoint_data['cargo_3ft'] = conjoint_data['cargo_3ft'].astype(int)
+conjoint_data['eng_hyb'] = conjoint_data['eng_hyb'].astype(int)
+
+# Ensure all data is numeric and handle any NaN values appropriately
+conjoint_data.fillna(0, inplace=True)  # Example: Fill NA/NaN values with zero
+conjoint_data = conjoint_data.apply(pd.to_numeric, errors='coerce')  # Coerce errors will convert non-convertible terms to NaN
+
+# Define the features and the target variable
+X = conjoint_data[['carpool', 'price', 'seat_7', 'seat_8', 'cargo_3ft', 'eng_hyb']]
+y = conjoint_data['choice']
+
+```
+
+```{python}
+#| echo: true
+#| message: True
+
+# Adding a constant to the model (intercept)
+X = sm.add_constant(X)
+
+# Check if there are still any object types
+print(X.dtypes, y.dtypes)
 
 
+```
+
+```{python}
+
+#| echo: true
+#| message: True
+
+# Fit the MNL model
+mnl_model = sm.MNLogit(y, X)
+mnl_result = mnl_model.fit()
+
+# Print the summary of the model
+print(mnl_result.summary())
+
+```
 ### Results
 
-_todo: Interpret the coefficients. Which features are more preferred?_
+*   **Price**: The negative coefficient for price (−0.1486) indicates that as the price increases, the likelihood of choosing that option decreases, as expected.
+*   **Seat 7 and Seat 8**: Both coefficients are negative, indicating less preference compared to the baseline (6 seats). The magnitude of the coefficient for Seat 7 is larger, suggesting a stronger negative preference compared to Seat 8.
+*   **Cargo 3**: The positive coefficient (0.4099) suggests a preference for more cargo space (3ft) over the baseline (2ft).
+*   **Eng Hyb**: The slight negative coefficient for the hybrid engine (−0.1102) suggests a slight aversion compared to the gasoline engine, although this effect is relatively small.
 
-_todo: Use the price coefficient as a dollar-per-util conversion factor. What is the dollar value of 3ft of cargo space as compared to 2ft of cargo space?_
+These coefficients provide insights into the preferences of respondents regarding different features of the products presented in the conjoint study. The standard errors indicate the precision of these estimates, with all p-values being significant, showing strong evidence against the null hypothesis of no effect.
 
-_todo: assume the market consists of the following 6 minivans. Predict the market shares of each minivan in the market._
+
+Using the price coefficient as a dollar-per-util conversion factor. What is the dollar value of 3ft of cargo space as compared to 2ft of cargo space?
+
+
+```{python}
+#| echo: true
+#| message: True
+
+# Coefficients from the model
+cargo_3ft_coeff = mnl_result.params.loc['cargo_3ft'][0]
+price_coeff = mnl_result.params.loc['price'][0]
+
+# Calculate the dollar value of 3ft of cargo space compared to 2ft
+dollar_value_cargo_3ft = cargo_3ft_coeff / -price_coeff
+dollar_value_cargo_3ft
+
+```
+
+The dollar value of having 3ft of cargo space as compared to 2ft, based on the estimated model coefficients, is approximately **$2.76**.
+
+This means that, according to the model, consumers would be willing to pay an additional $2.76 for a vehicle option that offers 3ft of cargo space over one that offers only 2ft, all else being equal. This calculation converts the utility gained from larger cargo space into a monetary equivalent using the sensitivity of consumer choices to changes in price.
+
+
+Assuming the market consists of the following 6 minivans. Predict the market shares of each minivan in the market.
 
 | Minivan | Seats | Cargo | Engine | Price |
 |---------|-------|-------|--------|-------|
@@ -426,10 +551,90 @@ _todo: assume the market consists of the following 6 minivans. Predict the marke
 | F       | 7     | 2     | Hyb    | 35    |
 
 
+```{python}
+
+#| echo: false
+#| message: True
+
+
+import numpy as np
+
+# Define the minivan market configuration
+minivans = pd.DataFrame({
+    'Minivan': ['A', 'B', 'C', 'D', 'E', 'F'],
+    'Seats': [7, 6, 8, 7, 6, 7],
+    'Cargo': [2, 2, 2, 3, 2, 2],
+    'Engine': ['Hyb', 'Gas', 'Gas', 'Gas', 'Elec', 'Hyb'],
+    'Price': [30, 30, 30, 40, 40, 35]
+})
+
+# Convert categorical data to the model format (one-hot encoding)
+minivans['seat_7'] = (minivans['Seats'] == 7).astype(int)
+minivans['seat_8'] = (minivans['Seats'] == 8).astype(int)
+minivans['cargo_3ft'] = (minivans['Cargo'] == 3).astype(int)
+minivans['eng_hyb'] = (minivans['Engine'] == 'Hyb').astype(int)
+minivans['eng_elec'] = (minivans['Engine'] == 'Elec').astype(int)
+
+# Setup the features for utility calculation
+X_minivans = minivans[['seat_7', 'seat_8', 'cargo_3ft', 'eng_hyb', 'eng_elec', 'Price']]
+X_minivans = sm.add_constant(X_minivans)  # add constant for the intercept
+
+```
+
+```{python}
+
+#| echo: true
+#| message: True
+
+
+# Calculate utilities for each minivan
+utilities = np.dot(X_minivans, mnl_result.params.values)
+# Compute market shares using softmax function
+market_shares = np.exp(utilities) / np.sum(np.exp(utilities), axis=0)
+
+# Add market shares to the minivans dataframe
+minivans['Market Share'] = market_shares
+minivans[['Minivan', 'Market Share']]
+```
+
+### Market Share Interpretation
+
+1.  **Minivan B (26.40%)**:
+    
+    *   **Attributes**: 6 seats, 2ft cargo, Gas engine, priced at $30.
+    *   **Interpretation**: This option has the highest market share, which suggests that a lower price combined with the base features (6 seats, Gas engine) is highly attractive to consumers. The absence of additional features seems to be offset by the lower price.
+2.  **Minivan C (22.76%)**:
+    
+    *   **Attributes**: 8 seats, 2ft cargo, Gas engine, also priced at $30.
+    *   **Interpretation**: The second most popular option, indicating a strong preference for more seating capacity at no additional cost in price, suggesting that consumers value additional seating when all other factors are equal.
+3.  **Minivan A (20.42%)**:
+    
+    *   **Attributes**: 7 seats, 2ft cargo, Hybrid engine, priced at $30.
+    *   **Interpretation**: The presence of a Hybrid engine with moderate pricing and seat count shows significant consumer interest in more environmentally friendly options when they are not priced higher than gas models.
+4.  **Minivan E (13.21%)**:
+    
+    *   **Attributes**: 6 seats, 2ft cargo, Electric engine, priced at $40.
+    *   **Interpretation**: Indicates a moderate interest in electric vehicles, though the higher price seems to be a deterrent compared to cheaper gas options.
+5.  **Minivan F (11.77%)**:
+    
+    *   **Attributes**: 7 seats, 2ft cargo, Hybrid engine, priced at $35.
+    *   **Interpretation**: Similar to Minivan A but slightly more expensive, which slightly reduces its attractiveness despite the hybrid engine.
+6.  **Minivan D (5.45%)**:
+    
+    *   **Attributes**: 7 seats, 3ft cargo, Gas engine, priced at $40.
+    *   **Interpretation**: Despite offering more cargo space, its higher price significantly lowers its market share. This suggests that price sensitivity may outweigh the benefit of additional cargo space for many consumers.
+
+### Overall Insights
+
+*   **Price Sensitivity**: Price plays a crucial role in consumer choices, as seen by the higher market shares of the lower-priced models.
+*   **Preference for Seat Capacity**: There is a clear preference for higher seating capacity when the price is held constant.
+*   **Eco-friendly Options**: Consumers show interest in hybrid and electric vehicles, but their choices are sensitive to price differences.
+*   **Cargo Space Value**: Additional cargo space does not seem to drive higher market share, especially when accompanied by a higher price.
+
+These insights could be used to strategize product offerings, pricing decisions, and marketing campaigns by highlighting features that align with consumer preferences.
+
+
 _hint: this example is taken from the "R 4 Marketing Research" book by Chapman and Feit. I believe the same example is present in the companion book titled "Python 4 Marketing Research".  I encourage you to attempt these questions on your own, but if you get stuck or would like to compare you results to "the answers," you may consult the Chapman and Feit books._
-
-
-
 
 
 

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Bansari Kathrotia">
-<meta name="dcterms.date" content="2024-05-11">
+<meta name="dcterms.date" content="2024-05-12">
 
 <title>Bansari’s Website - Poisson Regression Examples</title>
 <style>
@@ -173,6 +173,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data">Data</a></li>
   <li><a href="#model" id="toc-model" class="nav-link" data-scroll-target="#model">Model</a></li>
   <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results">Results</a></li>
+  <li><a href="#market-share-interpretation" id="toc-market-share-interpretation" class="nav-link" data-scroll-target="#market-share-interpretation">Market Share Interpretation</a></li>
+  <li><a href="#overall-insights" id="toc-overall-insights" class="nav-link" data-scroll-target="#overall-insights">Overall Insights</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -199,7 +201,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">May 11, 2024</p>
+      <p class="date">May 12, 2024</p>
     </div>
   </div>
   
@@ -237,7 +239,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="yogurt-dataset">Yogurt Dataset</h3>
 <p>We will use the <code>yogurt_data</code> dataset, which provides anonymized consumer identifiers (<code>id</code>), a vector indicating the chosen product (<code>y1</code>:<code>y4</code>), a vector indicating if any products were “featured” in the store as a form of advertising (<code>f1</code>:<code>f4</code>), and the products’ prices (<code>p1</code>:<code>p4</code>). For example, consumer 1 purchased yogurt 4 at a price of 0.079/oz and none of the yogurts were featured/advertised at the time of consumer 1’s purchase. Consumers 2 through 7 each bought yogurt 2, etc.</p>
 <p><em>todo: import the data, maybe show the first few rows, and describe the data a bit.</em></p>
-<div id="19ae801e" class="cell" data-message="true" data-execution_count="2">
+<div id="99949691" class="cell" data-message="true" data-execution_count="2">
 <div class="cell-output cell-output-display" data-execution_count="2">
 <div>
 
@@ -462,7 +464,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>The “hard part” of the MNL likelihood function is organizing the data, as we need to keep track of 3 dimensions (consumer <span class="math inline">\(i\)</span>, covariate <span class="math inline">\(k\)</span>, and product <span class="math inline">\(j\)</span>) instead of the typical 2 dimensions for cross-sectional regression models (consumer <span class="math inline">\(i\)</span> and covariate <span class="math inline">\(k\)</span>).</p>
 <p>What we would like to do is reorganize the data from a “wide” shape with <span class="math inline">\(n\)</span> rows and multiple columns for each covariate, to a “long” shape with <span class="math inline">\(n \times J\)</span> rows and a single column for each covariate. As part of this re-organization, we’ll add binary variables to indicate the first 3 products; the variables for featured and price are included in the dataset and simply need to be “pivoted” or “melted” from wide to long.</p>
 <p><em>todo: reshape and prep the data</em></p>
-<div id="0096d8f2" class="cell" data-message="true" data-execution_count="5">
+<div id="e0108313" class="cell" data-message="true" data-execution_count="5">
 <div class="cell-output cell-output-display" data-execution_count="5">
 <div>
 
@@ -561,13 +563,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><strong>Probability Calculation</strong>: Determines the probabilities of choosing each product by a consumer, factoring in the utilities of all available products for normalization.</li>
 <li><strong>Log-Likelihood</strong>: Computes the log of these probabilities where the product was actually chosen (where <code>choice == 1</code>) and sums these values to obtain the log-likelihood for the dataset given the model parameters.</li>
 </ol>
-<div id="0d8d1f36" class="cell" data-message="true" data-execution_count="6">
+<div id="85fb219a" class="cell" data-message="true" data-execution_count="6">
 <div class="cell-output cell-output-stdout">
 <pre><code>Log-Likelihood Value: -3570.660714305375</code></pre>
 </div>
 </div>
 <p><em>todo: Use <code>optim()</code> in R or <code>optimize()</code> in Python to find the MLEs for the 5 parameters (<span class="math inline">\(\beta_1, \beta_2, \beta_3, \beta_f, \beta_p\)</span>). (Hint: you should find 2 positive and 1 negative product intercepts, a small positive coefficient estimate for featured, and a large negative coefficient estimate for price.)</em></p>
-<div id="7deec2f5" class="cell" data-message="true" data-execution_count="8">
+<div id="4181b04a" class="cell" data-message="true" data-execution_count="8">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Optimization to find the MLE of the beta coefficients</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> minimize(negative_log_likelihood, initial_beta, args<span class="op">=</span>(long_data_final,), </span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>                  method<span class="op">=</span><span class="st">'L-BFGS-B'</span>, bounds<span class="op">=</span>bounds)</span>
@@ -587,15 +589,15 @@ Estimated beta coefficients: [  1.38775685   0.64350552  -3.08612138   0.4874070
 <p><em>todo: interpret the 3 product intercepts (which yogurt is most preferred?).</em></p>
 <p>Interpreting the three product intercepts from the estimated beta coefficients for Brands 1, 2, and 3, we can gauge consumer preferences among the yogurt options relative to the baseline (Brand 4, which does not have a specific intercept and is implied as zero in the model). Here’s how to interpret the intercepts:</p>
 <ol type="1">
-<li><p><strong>Beta for Brand 1 (<code>beta_1</code>)</strong>: 1.3881.3881.388</p>
+<li><p><strong>Beta for Brand 1 (<code>beta_1</code>)</strong>: 1.388</p>
 <ul>
 <li>This positive intercept suggests that, holding other factors constant (such as price and whether the product was featured), Brand 1 is preferred over Brand 4. The higher positive value indicates a strong preference for this brand.</li>
 </ul></li>
-<li><p><strong>Beta for Brand 2 (<code>beta_2</code>)</strong>: 0.6440.6440.644</p>
+<li><p><strong>Beta for Brand 2 (<code>beta_2</code>)</strong>: 0.644</p>
 <ul>
 <li>Similarly, this positive intercept indicates a preference for Brand 2 over Brand 4, though the preference is less strong compared to Brand 1. Brand 2 is still preferred but not as much as Brand 1.</li>
 </ul></li>
-<li><p><strong>Beta for Brand 3 (<code>beta_3</code>)</strong>: −3.086-3.086−3.086</p>
+<li><p><strong>Beta for Brand 3 (<code>beta_3</code>)</strong>: −3.086</p>
 <ul>
 <li>The negative value of this intercept indicates that Brand 3 is less preferred compared to Brand 4. This substantial negative value suggests a strong aversion to Brand 3 relative to the other options.</li>
 </ul></li>
@@ -617,17 +619,14 @@ Estimated beta coefficients: [  1.38775685   0.64350552  -3.08612138   0.4874070
 <li>Most preferred: Brand 1 (intercept = 1.388)</li>
 <li>Least preferred: Brand 3 (intercept = -3.086)</li>
 </ul></li>
-<li><p><strong>Calculate the difference in utilities</strong> between the most preferred and least preferred yogurts:</p>
-<p>Difference in utility=Utility of Brand 1−Utility of Brand 3=1.388−(−3.086)=4.474\text{Difference in utility} = \text{Utility of Brand 1} - \text{Utility of Brand 3} = 1.388 - (-3.086) = 4.474Difference in utility=Utility of Brand 1−Utility of Brand 3=1.388−(−3.086)=4.474</p></li>
+<li><p><strong>Calculate the difference in utilities</strong> between the most preferred and least preferred yogurts:</p></li>
 <li><p><strong>Use the price coefficient as a conversion factor</strong>:</p>
 <ul>
-<li>Price coefficient (<code>beta_p</code>): −37.058-37.058−37.058</li>
-<li>The price coefficient’s magnitude indicates the decrease in the utility of purchasing a yogurt per dollar increase in its price. Therefore, it acts as a conversion factor from utility to dollar value, where −1/βp-1/\beta_p−1/βp​ is the dollar value of one unit of utility.</li>
+<li>Price coefficient (<code>beta_p</code>): −37.058</li>
+<li>The price coefficient’s magnitude indicates the decrease in the utility of purchasing a yogurt per dollar increase in its price. Therefore, it acts as a conversion factor from utility to dollar value.</li>
 </ul></li>
-<li><p><strong>Calculate the dollar benefit</strong> using the conversion factor:</p>
-<p>Dollar benefit=Difference in utility×(−1βp)=4.474×(−1−37.058)\text{Dollar benefit} = \text{Difference in utility} \times \left(-\frac{1}{\beta_p}\right) = 4.474 \times \left(-\frac{1}{-37.058}\right)Dollar benefit=Difference in utility×(−βp​1​)=4.474×(−−37.0581​)</p></li>
 </ul>
-<div id="40745cab" class="cell" data-message="true" data-execution_count="10">
+<div id="4472174b" class="cell" data-message="true" data-execution_count="10">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the dollar benefit</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>dollar_benefit <span class="op">=</span> utility_difference <span class="op">*</span> dollar_value_per_util</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>dollar_benefit</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -652,7 +651,7 @@ Estimated beta coefficients: [  1.38775685   0.64350552  -3.08612138   0.4874070
 <li>Calculate the expected market shares by taking the average of the choice probabilities across all consumers for each product.</li>
 </ul></li>
 </ul>
-<div id="1cbad977" class="cell" data-message="true" data-execution_count="11">
+<div id="3908e28f" class="cell" data-message="true" data-execution_count="11">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the current market shares</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>current_market_shares <span class="op">=</span> long_data_final.groupby(<span class="st">'product'</span>)[<span class="st">'choice'</span>].mean()</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Current Market Shares:"</span>, current_market_shares)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -665,7 +664,7 @@ Estimated beta coefficients: [  1.38775685   0.64350552  -3.08612138   0.4874070
 Name: choice, dtype: float64</code></pre>
 </div>
 </div>
-<div id="53b581c0" class="cell" data-message="true" data-execution_count="13">
+<div id="e3dce205" class="cell" data-message="true" data-execution_count="13">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Call the function with the original data and fitted beta coefficients</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>new_market_shares <span class="op">=</span> predict_new_market_shares(long_data_final, result.x)</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"New Market Shares After Price Increase:"</span>, new_market_shares)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -716,17 +715,290 @@ Name: probability, dtype: float64</code></pre>
 <section id="data" class="level3">
 <h3 class="anchored" data-anchor-id="data">Data</h3>
 <p><em>todo: download the dataset from here:</em> http://goo.gl/5xQObB</p>
+<div id="050b191d" class="cell" data-message="true" data-execution_count="14">
+<div class="cell-output cell-output-display" data-execution_count="14">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">resp.id</th>
+<th data-quarto-table-cell-role="th">ques</th>
+<th data-quarto-table-cell-role="th">alt</th>
+<th data-quarto-table-cell-role="th">carpool</th>
+<th data-quarto-table-cell-role="th">seat</th>
+<th data-quarto-table-cell-role="th">cargo</th>
+<th data-quarto-table-cell-role="th">eng</th>
+<th data-quarto-table-cell-role="th">price</th>
+<th data-quarto-table-cell-role="th">choice</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>yes</td>
+<td>6</td>
+<td>2ft</td>
+<td>gas</td>
+<td>35</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>1</td>
+<td>1</td>
+<td>2</td>
+<td>yes</td>
+<td>8</td>
+<td>3ft</td>
+<td>hyb</td>
+<td>30</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>1</td>
+<td>1</td>
+<td>3</td>
+<td>yes</td>
+<td>6</td>
+<td>3ft</td>
+<td>gas</td>
+<td>30</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>1</td>
+<td>2</td>
+<td>1</td>
+<td>yes</td>
+<td>6</td>
+<td>2ft</td>
+<td>gas</td>
+<td>30</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+<td>yes</td>
+<td>7</td>
+<td>3ft</td>
+<td>gas</td>
+<td>35</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">8995</td>
+<td>200</td>
+<td>14</td>
+<td>2</td>
+<td>no</td>
+<td>7</td>
+<td>3ft</td>
+<td>gas</td>
+<td>35</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">8996</td>
+<td>200</td>
+<td>14</td>
+<td>3</td>
+<td>no</td>
+<td>7</td>
+<td>3ft</td>
+<td>hyb</td>
+<td>35</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">8997</td>
+<td>200</td>
+<td>15</td>
+<td>1</td>
+<td>no</td>
+<td>7</td>
+<td>2ft</td>
+<td>gas</td>
+<td>35</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">8998</td>
+<td>200</td>
+<td>15</td>
+<td>2</td>
+<td>no</td>
+<td>8</td>
+<td>3ft</td>
+<td>elec</td>
+<td>40</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">8999</td>
+<td>200</td>
+<td>15</td>
+<td>3</td>
+<td>no</td>
+<td>6</td>
+<td>3ft</td>
+<td>gas</td>
+<td>35</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+
+<p>9000 rows × 9 columns</p>
+</div>
+</div>
+</div>
+<p>The dataset <code>rintro-chapter13conjoint.csv</code> appears to contain data from a conjoint analysis, typically used to gauge consumer preferences across different product features. Here’s a breakdown of the columns:</p>
+<ul>
+<li><code>resp.id</code>: Identifier for respondents.</li>
+<li><code>ques</code>: Question or scenario number.</li>
+<li><code>alt</code>: Alternative options presented within each question.</li>
+<li><code>carpool</code>: Indicates if the option includes a carpool feature (yes/no).</li>
+<li><code>seat</code>: Number of seats.</li>
+<li><code>cargo</code>: Cargo space.</li>
+<li><code>eng</code>: Type of engine (e.g., ‘gas’ for gasoline, ‘hyb’ for hybrid).</li>
+<li><code>price</code>: Price in thousands of dollars.</li>
+<li><code>choice</code>: Binary indicator of whether the respondent chose this alternative (1 for chosen, 0 for not chosen).</li>
+</ul>
 <p><em>todo: describe the data a bit. How many respondents took the conjoint survey? How many choice tasks did each respondent complete? How many alternatives were presented on each choice task? For each alternative.</em></p>
+<div id="0b282d82" class="cell" data-message="true" data-execution_count="16">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>num_respondents, tasks_per_respondent.describe(), alternatives_per_task</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="16">
+<pre><code>(200,
+ count    200.0
+ mean      15.0
+ std        0.0
+ min       15.0
+ 25%       15.0
+ 50%       15.0
+ 75%       15.0
+ max       15.0
+ Name: ques, dtype: float64,
+ 3)</code></pre>
+</div>
+</div>
+<p>Here’s a summary of the dataset based on the analysis:</p>
+<ol type="1">
+<li><p><strong>Number of Respondents</strong>: There are 200 unique respondents who participated in the conjoint survey.</p></li>
+<li><p><strong>Choice Tasks Per Respondent</strong>:</p>
+<ul>
+<li>Each respondent completed 15 choice tasks.</li>
+<li>This is consistent across all respondents, as indicated by the lack of variability (standard deviation is 0).</li>
+</ul></li>
+<li><p><strong>Alternatives Presented in Each Choice Task</strong>:</p>
+<ul>
+<li>Each choice task presented 3 alternatives to the respondents.</li>
+<li>This number is consistent across all tasks and respondents, as shown by the uniform count and lack of variability.</li>
+</ul></li>
+</ol>
 <p>The attributes (levels) were number of seats (6,7,8), cargo space (2ft, 3ft), engine type (gas, hybrid, electric), and price (in thousands of dollars).</p>
 </section>
 <section id="model" class="level3">
 <h3 class="anchored" data-anchor-id="model">Model</h3>
 <p><em>todo: estimate a MNL model omitting the following levels to avoide multicollinearity (6 seats, 2ft cargo, and gas engine). Include price as a continuous variable. Show a table of coefficients and standard errors. You may use your own likelihood function from above, or you may use a function from a package/library to perform the estimation.</em></p>
+<div id="113d60bf" class="cell" data-message="true" data-execution_count="18">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Adding a constant to the model (intercept)</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> sm.add_constant(X)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Check if there are still any object types</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(X.dtypes, y.dtypes)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>const        float64
+carpool        int64
+price          int64
+seat_7         int64
+seat_8         int64
+cargo_3ft      int64
+eng_hyb        int64
+dtype: object int64</code></pre>
+</div>
+</div>
+<div id="2e9133dc" class="cell" data-message="true" data-execution_count="19">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit the MNL model</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>mnl_model <span class="op">=</span> sm.MNLogit(y, X)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>mnl_result <span class="op">=</span> mnl_model.fit()</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Print the summary of the model</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(mnl_result.summary())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Optimization terminated successfully.
+         Current function value: 0.591150
+         Iterations 5
+                          MNLogit Regression Results                          
+==============================================================================
+Dep. Variable:                 choice   No. Observations:                 9000
+Model:                        MNLogit   Df Residuals:                     8993
+Method:                           MLE   Df Model:                            6
+Date:                Sun, 12 May 2024   Pseudo R-squ.:                 0.07127
+Time:                        21:54:45   Log-Likelihood:                -5320.3
+converged:                       True   LL-Null:                       -5728.6
+Covariance Type:            nonrobust   LLR p-value:                4.060e-173
+==============================================================================
+  choice=1       coef    std err          z      P&gt;|z|      [0.025      0.975]
+------------------------------------------------------------------------------
+const          4.5121      0.210     21.490      0.000       4.101       4.924
+carpool        0.0074      0.051      0.144      0.885      -0.093       0.108
+price         -0.1486      0.006    -24.977      0.000      -0.160      -0.137
+seat_7        -0.4832      0.058     -8.397      0.000      -0.596      -0.370
+seat_8        -0.2645      0.056     -4.687      0.000      -0.375      -0.154
+cargo_3ft      0.4099      0.047      8.723      0.000       0.318       0.502
+eng_hyb       -0.1102      0.050     -2.203      0.028      -0.208      -0.012
+==============================================================================</code></pre>
+</div>
+</div>
 </section>
 <section id="results" class="level3">
 <h3 class="anchored" data-anchor-id="results">Results</h3>
 <p><em>todo: Interpret the coefficients. Which features are more preferred?</em></p>
+<ul>
+<li><strong>Price</strong>: The negative coefficient for price (−0.1486) indicates that as the price increases, the likelihood of choosing that option decreases, as expected.</li>
+<li><strong>Seat 7 and Seat 8</strong>: Both coefficients are negative, indicating less preference compared to the baseline (6 seats). The magnitude of the coefficient for Seat 7 is larger, suggesting a stronger negative preference compared to Seat 8.</li>
+<li><strong>Cargo 3</strong>: The positive coefficient (0.4099) suggests a preference for more cargo space (3ft) over the baseline (2ft).</li>
+<li><strong>Eng Hyb</strong>: The slight negative coefficient for the hybrid engine (−0.1102) suggests a slight aversion compared to the gasoline engine, although this effect is relatively small.</li>
+</ul>
+<p>These coefficients provide insights into the preferences of respondents regarding different features of the products presented in the conjoint study. The standard errors indicate the precision of these estimates, with all p-values being significant, showing strong evidence against the null hypothesis of no effect.</p>
 <p><em>todo: Use the price coefficient as a dollar-per-util conversion factor. What is the dollar value of 3ft of cargo space as compared to 2ft of cargo space?</em></p>
+<div id="60486e4c" class="cell" data-message="true" data-execution_count="20">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Coefficients from the model</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>cargo_3ft_coeff <span class="op">=</span> mnl_result.params.loc[<span class="st">'cargo_3ft'</span>][<span class="dv">0</span>]</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>price_coeff <span class="op">=</span> mnl_result.params.loc[<span class="st">'price'</span>][<span class="dv">0</span>]</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the dollar value of 3ft of cargo space compared to 2ft</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>dollar_value_cargo_3ft <span class="op">=</span> cargo_3ft_coeff <span class="op">/</span> <span class="op">-</span>price_coeff</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>dollar_value_cargo_3ft</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="20">
+<pre><code>2.7589563979556146</code></pre>
+</div>
+</div>
+<p>The dollar value of having 3ft of cargo space as compared to 2ft, based on the estimated model coefficients, is approximately <strong>$2.76</strong>.</p>
+<p>This means that, according to the model, consumers would be willing to pay an additional $2.76 for a vehicle option that offers 3ft of cargo space over one that offers only 2ft, all else being equal. This calculation converts the utility gained from larger cargo space into a monetary equivalent using the sensitivity of consumer choices to changes in price.</p>
 <p><em>todo: assume the market consists of the following 6 minivans. Predict the market shares of each minivan in the market.</em></p>
 <table class="table">
 <thead>
@@ -783,6 +1055,109 @@ Name: probability, dtype: float64</code></pre>
 </tr>
 </tbody>
 </table>
+<div id="59c1d67e" class="cell" data-message="true" data-execution_count="22">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate utilities for each minivan</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>utilities <span class="op">=</span> np.dot(X_minivans, mnl_result.params.values)</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute market shares using softmax function</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>market_shares <span class="op">=</span> np.exp(utilities) <span class="op">/</span> np.<span class="bu">sum</span>(np.exp(utilities), axis<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Add market shares to the minivans dataframe</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>minivans[<span class="st">'Market Share'</span>] <span class="op">=</span> market_shares</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>minivans[[<span class="st">'Minivan'</span>, <span class="st">'Market Share'</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="22">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">Minivan</th>
+<th data-quarto-table-cell-role="th">Market Share</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>A</td>
+<td>0.204170</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>B</td>
+<td>0.264023</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>C</td>
+<td>0.227573</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>D</td>
+<td>0.054479</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>E</td>
+<td>0.132099</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">5</td>
+<td>F</td>
+<td>0.117656</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</section>
+<section id="market-share-interpretation" class="level3">
+<h3 class="anchored" data-anchor-id="market-share-interpretation">Market Share Interpretation</h3>
+<ol type="1">
+<li><p><strong>Minivan B (26.40%)</strong>:</p>
+<ul>
+<li><strong>Attributes</strong>: 6 seats, 2ft cargo, Gas engine, priced at $30.</li>
+<li><strong>Interpretation</strong>: This option has the highest market share, which suggests that a lower price combined with the base features (6 seats, Gas engine) is highly attractive to consumers. The absence of additional features seems to be offset by the lower price.</li>
+</ul></li>
+<li><p><strong>Minivan C (22.76%)</strong>:</p>
+<ul>
+<li><strong>Attributes</strong>: 8 seats, 2ft cargo, Gas engine, also priced at $30.</li>
+<li><strong>Interpretation</strong>: The second most popular option, indicating a strong preference for more seating capacity at no additional cost in price, suggesting that consumers value additional seating when all other factors are equal.</li>
+</ul></li>
+<li><p><strong>Minivan A (20.42%)</strong>:</p>
+<ul>
+<li><strong>Attributes</strong>: 7 seats, 2ft cargo, Hybrid engine, priced at $30.</li>
+<li><strong>Interpretation</strong>: The presence of a Hybrid engine with moderate pricing and seat count shows significant consumer interest in more environmentally friendly options when they are not priced higher than gas models.</li>
+</ul></li>
+<li><p><strong>Minivan E (13.21%)</strong>:</p>
+<ul>
+<li><strong>Attributes</strong>: 6 seats, 2ft cargo, Electric engine, priced at $40.</li>
+<li><strong>Interpretation</strong>: Indicates a moderate interest in electric vehicles, though the higher price seems to be a deterrent compared to cheaper gas options.</li>
+</ul></li>
+<li><p><strong>Minivan F (11.77%)</strong>:</p>
+<ul>
+<li><strong>Attributes</strong>: 7 seats, 2ft cargo, Hybrid engine, priced at $35.</li>
+<li><strong>Interpretation</strong>: Similar to Minivan A but slightly more expensive, which slightly reduces its attractiveness despite the hybrid engine.</li>
+</ul></li>
+<li><p><strong>Minivan D (5.45%)</strong>:</p>
+<ul>
+<li><strong>Attributes</strong>: 7 seats, 3ft cargo, Gas engine, priced at $40.</li>
+<li><strong>Interpretation</strong>: Despite offering more cargo space, its higher price significantly lowers its market share. This suggests that price sensitivity may outweigh the benefit of additional cargo space for many consumers.</li>
+</ul></li>
+</ol>
+</section>
+<section id="overall-insights" class="level3">
+<h3 class="anchored" data-anchor-id="overall-insights">Overall Insights</h3>
+<ul>
+<li><strong>Price Sensitivity</strong>: Price plays a crucial role in consumer choices, as seen by the higher market shares of the lower-priced models.</li>
+<li><strong>Preference for Seat Capacity</strong>: There is a clear preference for higher seating capacity when the price is held constant.</li>
+<li><strong>Eco-friendly Options</strong>: Consumers show interest in hybrid and electric vehicles, but their choices are sensitive to price differences.</li>
+<li><strong>Cargo Space Value</strong>: Additional cargo space does not seem to drive higher market share, especially when accompanied by a higher price.</li>
+</ul>
+<p>These insights could be used to strategize product offerings, pricing decisions, and marketing campaigns by highlighting features that align with consumer preferences.</p>
 <p><em>hint: this example is taken from the “R 4 Marketing Research” book by Chapman and Feit. I believe the same example is present in the companion book titled “Python 4 Marketing Research”. I encourage you to attempt these questions on your own, but if you get stuck or would like to compare you results to “the answers,” you may consult the Chapman and Feit books.</em></p>
 
 
