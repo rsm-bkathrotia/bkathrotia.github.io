@@ -1,6 +1,6 @@
 ---
 title: "Key Drivers Analysis"
-author: "Your Name"
+author: "Bansari Kathrotia"
 date: today
 ---
 
@@ -12,8 +12,155 @@ _todo: replicate the table on slide 19 of the session 4 slides. This involves ca
 
 _If you want a challenge, either (1) implement one or more of the measures yourself. "Usefulness" is rather easy to program up. Shapley values for linear regression are a bit more work. Or (2) add additional measures to the table such as the importance scores from XGBoost._
 
+```{python}
+
+import pandas as pd
+
+# Load the dataset
+data_path = 'data_for_drivers_analysis.csv'
+data = pd.read_csv(data_path)
+
+# Display the first few rows of the dataset to understand its structure
+data.head()
+
+```
+
+
+```{python}
+# Calculate Pearson correlations
+correlations = data.corr()['satisfaction'].drop(['satisfaction', 'id', 'brand'])
+correlations
+
+```
+
+```{python}
+
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LinearRegression
+import numpy as np
+
+# Standardize the dataset
+features = ['trust', 'build', 'differs', 'easy', 'appealing', 'rewarding', 'popular', 'service', 'impact']
+X = data[features]
+y = data['satisfaction']
+
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Perform multiple linear regression
+reg = LinearRegression()
+reg.fit(X_scaled, y)
+
+# Extract standardized coefficients
+standardized_coefficients = reg.coef_
+
+# Create a DataFrame to display the results
+standardized_coefficients_df = pd.DataFrame({
+    'Feature': features,
+    'Standardized Coefficient': standardized_coefficients
+}).sort_values(by='Standardized Coefficient', ascending=False)
+
+standardized_coefficients_df
+
+```
+
+
+```{python}
+
+# Install necessary R packages using rpy2
+import rpy2.robjects.packages as rpackages
+from rpy2.robjects.vectors import StrVector
+
+# Check if the required R packages are installed and install if not
+utils = rpackages.importr('utils')
+utils.chooseCRANmirror(ind=1)
+
+# Install polycor package if not already installed
+packages_to_install = ['polycor']
+names_to_install = [x for x in packages_to_install if not rpackages.isinstalled(x)]
+if len(names_to_install) > 0:
+    utils.install_packages(StrVector(names_to_install))
+
+
+```
+
+
+```{python}
+
+import rpy2.robjects as robjects
+from rpy2.robjects import pandas2ri
+
+# Enable the automatic conversion between pandas and R data frames
+pandas2ri.activate()
+
+# Load the necessary R package
+polycor = rpackages.importr('polycor')
+
+# Convert the data to an R dataframe
+r_dataframe = pandas2ri.py2rpy(data)
+
+# Calculate Polychoric Correlations
+polychoric_correlations = {}
+for column in features:
+    polychoric_corr = polycor.hetcor(r_dataframe.rx2('satisfaction'), r_dataframe.rx2(column), ML=True)[0]
+    polychoric_correlations[column] = polychoric_corr[1, 0]
+
+# Convert the results to a pandas DataFrame
+polychoric_df = pd.DataFrame(list(polychoric_correlations.items()), columns=['Feature', 'Polychoric Correlation'])
+polychoric_df.sort_values(by='Polychoric Correlation', ascending=False, inplace=True)
+
+polychoric_df
+
+```
 
 
 
+```{python}
 
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LinearRegression
+
+# Standardize the dataset
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Perform multiple linear regression
+reg = LinearRegression()
+reg.fit(X_scaled, y)
+
+# Extract standardized coefficients
+standardized_coefficients = reg.coef_
+
+# Create a DataFrame to display the results
+standardized_coefficients_df = pd.DataFrame({
+    'Feature': features,
+    'Standardized Coefficient': standardized_coefficients
+}).sort_values(by='Standardized Coefficient', ascending=False)
+
+print(standardized_coefficients_df)
+
+```
+
+
+```{python}
+
+import shap
+
+# Fit the linear regression model again
+reg.fit(X, y)
+
+# Use SHAP to compute Shapley values
+explainer = shap.LinearExplainer(reg, X, feature_dependence="correlation")
+shap_values = explainer.shap_values(X)
+
+# Summarize the mean absolute Shapley values for each feature
+shap_summary = np.mean(np.abs(shap_values), axis=0)
+shap_df = pd.DataFrame({
+    'Feature': features,
+    'Shapley Value': shap_summary
+}).sort_values(by='Shapley Value', ascending=False)
+
+print(shap_df)
+
+```
 
