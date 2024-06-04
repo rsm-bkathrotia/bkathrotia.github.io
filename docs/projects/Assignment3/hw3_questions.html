@@ -2,12 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.4.506">
+<meta name="generator" content="quarto-1.4.552">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Bansari Kathrotia">
-<meta name="dcterms.date" content="2024-05-12">
+<meta name="dcterms.date" content="2024-05-16">
 
 <title>Bansari’s Website - Poisson Regression Examples</title>
 <style>
@@ -96,6 +96,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-more-match-text": "more match in this document",
     "search-more-matches-text": "more matches in this document",
     "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
     "search-detached-cancel-button-title": "Cancel",
     "search-submit-button-title": "Submit",
     "search-label": "Search"
@@ -107,6 +108,33 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="../../styles.css">
 </head>
@@ -201,7 +229,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">May 12, 2024</p>
+      <p class="date">May 16, 2024</p>
     </div>
   </div>
   
@@ -238,9 +266,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="yogurt-dataset" class="level3">
 <h3 class="anchored" data-anchor-id="yogurt-dataset">Yogurt Dataset</h3>
 <p>We will use the <code>yogurt_data</code> dataset, which provides anonymized consumer identifiers (<code>id</code>), a vector indicating the chosen product (<code>y1</code>:<code>y4</code>), a vector indicating if any products were “featured” in the store as a form of advertising (<code>f1</code>:<code>f4</code>), and the products’ prices (<code>p1</code>:<code>p4</code>). For example, consumer 1 purchased yogurt 4 at a price of 0.079/oz and none of the yogurts were featured/advertised at the time of consumer 1’s purchase. Consumers 2 through 7 each bought yogurt 2, etc.</p>
-<p><em>todo: import the data, maybe show the first few rows, and describe the data a bit.</em></p>
-<div id="99949691" class="cell" data-message="true" data-execution_count="2">
+<div id="5ba7747e" class="cell" data-message="true" data-execution_count="2">
 <div class="cell-output cell-output-display" data-execution_count="2">
+<div>
 <div>
 
 
@@ -447,6 +475,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </div>
+</div>
 <p>The dataset contains the following columns:</p>
 <ul>
 <li><code>id</code>: Unique identifier for each consumer.</li>
@@ -463,9 +492,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p><span class="math display">\[ x_j' = [\mathbbm{1}(\text{Yogurt 1}), \mathbbm{1}(\text{Yogurt 2}), \mathbbm{1}(\text{Yogurt 3}), X_f, X_p] \]</span></p>
 <p>The “hard part” of the MNL likelihood function is organizing the data, as we need to keep track of 3 dimensions (consumer <span class="math inline">\(i\)</span>, covariate <span class="math inline">\(k\)</span>, and product <span class="math inline">\(j\)</span>) instead of the typical 2 dimensions for cross-sectional regression models (consumer <span class="math inline">\(i\)</span> and covariate <span class="math inline">\(k\)</span>).</p>
 <p>What we would like to do is reorganize the data from a “wide” shape with <span class="math inline">\(n\)</span> rows and multiple columns for each covariate, to a “long” shape with <span class="math inline">\(n \times J\)</span> rows and a single column for each covariate. As part of this re-organization, we’ll add binary variables to indicate the first 3 products; the variables for featured and price are included in the dataset and simply need to be “pivoted” or “melted” from wide to long.</p>
-<p><em>todo: reshape and prep the data</em></p>
-<div id="e0108313" class="cell" data-message="true" data-execution_count="5">
+<p>Let’s reshape the dataset for analysis:</p>
+<div id="a21bcb70" class="cell" data-message="true" data-execution_count="5">
 <div class="cell-output cell-output-display" data-execution_count="5">
+<div>
 <div>
 
 
@@ -545,6 +575,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </div>
+</div>
 <p>The dataset has been reshaped into the long format using the dataset named “yogurt”. Here is the structure of the transformed data:</p>
 <ul>
 <li><code>id</code>: Consumer identifier.</li>
@@ -557,19 +588,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="estimation" class="level3">
 <h3 class="anchored" data-anchor-id="estimation">Estimation</h3>
-<p><em>todo: Code up the log-likelihood function.</em></p>
 <ol type="1">
 <li><strong>Utility Function</strong>: Calculates the utility for each product based on the beta coefficients and the features in the dataset.</li>
 <li><strong>Probability Calculation</strong>: Determines the probabilities of choosing each product by a consumer, factoring in the utilities of all available products for normalization.</li>
 <li><strong>Log-Likelihood</strong>: Computes the log of these probabilities where the product was actually chosen (where <code>choice == 1</code>) and sums these values to obtain the log-likelihood for the dataset given the model parameters.</li>
 </ol>
-<div id="85fb219a" class="cell" data-message="true" data-execution_count="6">
+<div id="9708f7e9" class="cell" data-message="true" data-execution_count="6">
 <div class="cell-output cell-output-stdout">
 <pre><code>Log-Likelihood Value: -3570.660714305375</code></pre>
 </div>
 </div>
-<p><em>todo: Use <code>optim()</code> in R or <code>optimize()</code> in Python to find the MLEs for the 5 parameters (<span class="math inline">\(\beta_1, \beta_2, \beta_3, \beta_f, \beta_p\)</span>). (Hint: you should find 2 positive and 1 negative product intercepts, a small positive coefficient estimate for featured, and a large negative coefficient estimate for price.)</em></p>
-<div id="4181b04a" class="cell" data-message="true" data-execution_count="8">
+<p>Optimizin gthe model to find the MLEs for the 5 parameters (<span class="math inline">\(\beta_1, \beta_2, \beta_3, \beta_f, \beta_p\)</span>). (Hint: you should find 2 positive and 1 negative product intercepts, a small positive coefficient estimate for featured, and a large negative coefficient estimate for price.)</p>
+<div id="c905a389" class="cell" data-message="true" data-execution_count="8">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Optimization to find the MLE of the beta coefficients</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> minimize(negative_log_likelihood, initial_beta, args<span class="op">=</span>(long_data_final,), </span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>                  method<span class="op">=</span><span class="st">'L-BFGS-B'</span>, bounds<span class="op">=</span>bounds)</span>
@@ -579,15 +609,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Estimated beta coefficients:"</span>, result.x)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Optimization Success: True
-Estimated beta coefficients: [  1.38775685   0.64350552  -3.08612138   0.48740703 -37.05803459]</code></pre>
+Estimated beta coefficients: [  1.38775763   0.6435053   -3.08612024   0.48741136 -37.05807603]</code></pre>
 </div>
 </div>
 </section>
 <section id="discussion" class="level3">
 <h3 class="anchored" data-anchor-id="discussion">Discussion</h3>
 <p>We learn…</p>
-<p><em>todo: interpret the 3 product intercepts (which yogurt is most preferred?).</em></p>
-<p>Interpreting the three product intercepts from the estimated beta coefficients for Brands 1, 2, and 3, we can gauge consumer preferences among the yogurt options relative to the baseline (Brand 4, which does not have a specific intercept and is implied as zero in the model). Here’s how to interpret the intercepts:</p>
+<p>From the three product intercepts from the estimated beta coefficients for Brands 1, 2, and 3, we can gauge consumer preferences among the yogurt options relative to the baseline (Brand 4, which does not have a specific intercept and is implied as zero in the model). Here’s how to interpret the intercepts:</p>
 <ol type="1">
 <li><p><strong>Beta for Brand 1 (<code>beta_1</code>)</strong>: 1.388</p>
 <ul>
@@ -612,7 +641,6 @@ Estimated beta coefficients: [  1.38775685   0.64350552  -3.08612138   0.4874070
 <li><strong>Brand 3</strong> is the least preferred, with a significant negative intercept indicating a strong preference against it compared to Brand 4.</li>
 </ul>
 <p>This interpretation can help in strategic decisions related to marketing and product placement, such as focusing promotional efforts on Brands 1 and 2, considering price adjustments or rebranding for Brand 3, and understanding the competitive position of Brand 4 as a potentially neutral or fallback option.</p>
-<p><em>todo: use the estimated price coefficient as a dollar-per-util conversion factor. Use this conversion factor to calculate the dollar benefit between the most-preferred yogurt (the one with the highest intercept) and the least preferred yogurt (the one with the lowest intercept). This is a per-unit monetary measure of brand value.</em></p>
 <ul>
 <li><p><strong>Identify the most and least preferred yogurts</strong>:</p>
 <ul>
@@ -626,7 +654,7 @@ Estimated beta coefficients: [  1.38775685   0.64350552  -3.08612138   0.4874070
 <li>The price coefficient’s magnitude indicates the decrease in the utility of purchasing a yogurt per dollar increase in its price. Therefore, it acts as a conversion factor from utility to dollar value.</li>
 </ul></li>
 </ul>
-<div id="4472174b" class="cell" data-message="true" data-execution_count="10">
+<div id="ca99358a" class="cell" data-message="true" data-execution_count="10">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the dollar benefit</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>dollar_benefit <span class="op">=</span> utility_difference <span class="op">*</span> dollar_value_per_util</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>dollar_benefit</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -638,7 +666,6 @@ Estimated beta coefficients: [  1.38775685   0.64350552  -3.08612138   0.4874070
 <p>This negative sign might initially seem counterintuitive, but it reflects how much less consumers would be willing to pay for the less preferred option (Brand 3). In other words, Brand 1 has a higher inherent value of about 12 cents per unit over Brand 3 in the eyes of consumers.</p>
 <p>This monetary measure effectively quantifies the brand value in dollar terms based on consumer preferences modeled by the MNL. This insight can be leveraged for pricing strategies and marketing efforts to enhance product positioning and profitability.</p>
 <p>One benefit of the MNL model is that we can simulate counterfactuals (eg, what if the price of yogurt 1 was $0.10/oz instead of $0.08/oz).</p>
-<p><em>todo: calculate the market shares in the market at the time the data were collected. Then, increase the price of yogurt 1 by $0.10 and use your fitted model to predict p(y|x) for each consumer and each product (this should be a matrix of <span class="math inline">\(N \times 4\)</span> estimated choice probabilities. Take the column averages to get the new, expected market shares that result from the $0.10 price increase to yogurt 1. Do the yogurt 1 market shares decrease?</em></p>
 <p>To calculate the market shares and predict the changes in market share due to a price increase for Yogurt 1,</p>
 <ul>
 <li><p><strong>Calculate Current Market Shares</strong>:</p>
@@ -651,7 +678,7 @@ Estimated beta coefficients: [  1.38775685   0.64350552  -3.08612138   0.4874070
 <li>Calculate the expected market shares by taking the average of the choice probabilities across all consumers for each product.</li>
 </ul></li>
 </ul>
-<div id="3908e28f" class="cell" data-message="true" data-execution_count="11">
+<div id="c3056e52" class="cell" data-message="true" data-execution_count="11">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the current market shares</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>current_market_shares <span class="op">=</span> long_data_final.groupby(<span class="st">'product'</span>)[<span class="st">'choice'</span>].mean()</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Current Market Shares:"</span>, current_market_shares)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -664,13 +691,13 @@ Estimated beta coefficients: [  1.38775685   0.64350552  -3.08612138   0.4874070
 Name: choice, dtype: float64</code></pre>
 </div>
 </div>
-<div id="e3dce205" class="cell" data-message="true" data-execution_count="13">
+<div id="d15bf873" class="cell" data-message="true" data-execution_count="13">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Call the function with the original data and fitted beta coefficients</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>new_market_shares <span class="op">=</span> predict_new_market_shares(long_data_final, result.x)</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"New Market Shares After Price Increase:"</span>, new_market_shares)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>New Market Shares After Price Increase: product
-1    0.021118
+1    0.021117
 2    0.591145
 3    0.044040
 4    0.343697
@@ -714,9 +741,9 @@ Name: probability, dtype: float64</code></pre>
 <h2 class="anchored" data-anchor-id="estimating-minivan-preferences">2. Estimating Minivan Preferences</h2>
 <section id="data" class="level3">
 <h3 class="anchored" data-anchor-id="data">Data</h3>
-<p><em>todo: download the dataset from here:</em> http://goo.gl/5xQObB</p>
-<div id="050b191d" class="cell" data-message="true" data-execution_count="14">
+<div id="3a848c14" class="cell" data-message="true" data-execution_count="14">
 <div class="cell-output cell-output-display" data-execution_count="14">
+<div>
 <div>
 
 
@@ -875,6 +902,7 @@ Name: probability, dtype: float64</code></pre>
 </div>
 </div>
 </div>
+</div>
 <p>The dataset <code>rintro-chapter13conjoint.csv</code> appears to contain data from a conjoint analysis, typically used to gauge consumer preferences across different product features. Here’s a breakdown of the columns:</p>
 <ul>
 <li><code>resp.id</code>: Identifier for respondents.</li>
@@ -887,8 +915,7 @@ Name: probability, dtype: float64</code></pre>
 <li><code>price</code>: Price in thousands of dollars.</li>
 <li><code>choice</code>: Binary indicator of whether the respondent chose this alternative (1 for chosen, 0 for not chosen).</li>
 </ul>
-<p><em>todo: describe the data a bit. How many respondents took the conjoint survey? How many choice tasks did each respondent complete? How many alternatives were presented on each choice task? For each alternative.</em></p>
-<div id="0b282d82" class="cell" data-message="true" data-execution_count="16">
+<div id="89a8e7c5" class="cell" data-message="true" data-execution_count="16">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>num_respondents, tasks_per_respondent.describe(), alternatives_per_task</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="16">
 <pre><code>(200,
@@ -922,8 +949,8 @@ Name: probability, dtype: float64</code></pre>
 </section>
 <section id="model" class="level3">
 <h3 class="anchored" data-anchor-id="model">Model</h3>
-<p><em>todo: estimate a MNL model omitting the following levels to avoide multicollinearity (6 seats, 2ft cargo, and gas engine). Include price as a continuous variable. Show a table of coefficients and standard errors. You may use your own likelihood function from above, or you may use a function from a package/library to perform the estimation.</em></p>
-<div id="113d60bf" class="cell" data-message="true" data-execution_count="18">
+<p>Estimating a MNL model omitting the following levels to avoide multicollinearity (6 seats, 2ft cargo, and gas engine). Include price as a continuous variable. Show a table of coefficients and standard errors. You may use your own likelihood function from above, or you may use a function from a package/library to perform the estimation.</p>
+<div id="edc7aba4" class="cell" data-message="true" data-execution_count="18">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Adding a constant to the model (intercept)</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> sm.add_constant(X)</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -940,7 +967,7 @@ eng_hyb        int64
 dtype: object int64</code></pre>
 </div>
 </div>
-<div id="2e9133dc" class="cell" data-message="true" data-execution_count="19">
+<div id="98555fd7" class="cell" data-message="true" data-execution_count="19">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit the MNL model</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>mnl_model <span class="op">=</span> sm.MNLogit(y, X)</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>mnl_result <span class="op">=</span> mnl_model.fit()</span>
@@ -956,8 +983,8 @@ dtype: object int64</code></pre>
 Dep. Variable:                 choice   No. Observations:                 9000
 Model:                        MNLogit   Df Residuals:                     8993
 Method:                           MLE   Df Model:                            6
-Date:                Sun, 12 May 2024   Pseudo R-squ.:                 0.07127
-Time:                        21:54:45   Log-Likelihood:                -5320.3
+Date:                Mon, 03 Jun 2024   Pseudo R-squ.:                 0.07127
+Time:                        15:43:36   Log-Likelihood:                -5320.3
 converged:                       True   LL-Null:                       -5728.6
 Covariance Type:            nonrobust   LLR p-value:                4.060e-173
 ==============================================================================
@@ -976,7 +1003,6 @@ eng_hyb       -0.1102      0.050     -2.203      0.028      -0.208      -0.012
 </section>
 <section id="results" class="level3">
 <h3 class="anchored" data-anchor-id="results">Results</h3>
-<p><em>todo: Interpret the coefficients. Which features are more preferred?</em></p>
 <ul>
 <li><strong>Price</strong>: The negative coefficient for price (−0.1486) indicates that as the price increases, the likelihood of choosing that option decreases, as expected.</li>
 <li><strong>Seat 7 and Seat 8</strong>: Both coefficients are negative, indicating less preference compared to the baseline (6 seats). The magnitude of the coefficient for Seat 7 is larger, suggesting a stronger negative preference compared to Seat 8.</li>
@@ -984,8 +1010,8 @@ eng_hyb       -0.1102      0.050     -2.203      0.028      -0.208      -0.012
 <li><strong>Eng Hyb</strong>: The slight negative coefficient for the hybrid engine (−0.1102) suggests a slight aversion compared to the gasoline engine, although this effect is relatively small.</li>
 </ul>
 <p>These coefficients provide insights into the preferences of respondents regarding different features of the products presented in the conjoint study. The standard errors indicate the precision of these estimates, with all p-values being significant, showing strong evidence against the null hypothesis of no effect.</p>
-<p><em>todo: Use the price coefficient as a dollar-per-util conversion factor. What is the dollar value of 3ft of cargo space as compared to 2ft of cargo space?</em></p>
-<div id="60486e4c" class="cell" data-message="true" data-execution_count="20">
+<p>Using the price coefficient as a dollar-per-util conversion factor. What is the dollar value of 3ft of cargo space as compared to 2ft of cargo space?</p>
+<div id="b13a3df4" class="cell" data-message="true" data-execution_count="20">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Coefficients from the model</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>cargo_3ft_coeff <span class="op">=</span> mnl_result.params.loc[<span class="st">'cargo_3ft'</span>][<span class="dv">0</span>]</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>price_coeff <span class="op">=</span> mnl_result.params.loc[<span class="st">'price'</span>][<span class="dv">0</span>]</span>
@@ -994,12 +1020,12 @@ eng_hyb       -0.1102      0.050     -2.203      0.028      -0.208      -0.012
 <span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>dollar_value_cargo_3ft <span class="op">=</span> cargo_3ft_coeff <span class="op">/</span> <span class="op">-</span>price_coeff</span>
 <span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>dollar_value_cargo_3ft</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="20">
-<pre><code>2.7589563979556146</code></pre>
+<pre><code>2.758956397955615</code></pre>
 </div>
 </div>
 <p>The dollar value of having 3ft of cargo space as compared to 2ft, based on the estimated model coefficients, is approximately <strong>$2.76</strong>.</p>
 <p>This means that, according to the model, consumers would be willing to pay an additional $2.76 for a vehicle option that offers 3ft of cargo space over one that offers only 2ft, all else being equal. This calculation converts the utility gained from larger cargo space into a monetary equivalent using the sensitivity of consumer choices to changes in price.</p>
-<p><em>todo: assume the market consists of the following 6 minivans. Predict the market shares of each minivan in the market.</em></p>
+<p>Assuming the market consists of the following 6 minivans. Predict the market shares of each minivan in the market.</p>
 <table class="table">
 <thead>
 <tr class="header">
@@ -1055,7 +1081,7 @@ eng_hyb       -0.1102      0.050     -2.203      0.028      -0.208      -0.012
 </tr>
 </tbody>
 </table>
-<div id="59c1d67e" class="cell" data-message="true" data-execution_count="22">
+<div id="fe1d6781" class="cell" data-message="true" data-execution_count="22">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate utilities for each minivan</span></span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>utilities <span class="op">=</span> np.dot(X_minivans, mnl_result.params.values)</span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute market shares using softmax function</span></span>
@@ -1065,6 +1091,7 @@ eng_hyb       -0.1102      0.050     -2.203      0.028      -0.208      -0.012
 <span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>minivans[<span class="st">'Market Share'</span>] <span class="op">=</span> market_shares</span>
 <span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>minivans[[<span class="st">'Minivan'</span>, <span class="st">'Market Share'</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="22">
+<div>
 <div>
 
 
@@ -1110,6 +1137,7 @@ eng_hyb       -0.1102      0.050     -2.203      0.028      -0.208      -0.012
 </tbody>
 </table>
 
+</div>
 </div>
 </div>
 </div>
@@ -1244,6 +1272,24 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     // clear code selection
     e.clearSelection();
   });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
   function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
     const config = {
       allowHTML: true,
@@ -1278,7 +1324,11 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       try { href = new URL(href).hash; } catch {}
       const id = href.replace(/^#\/?/, "");
       const note = window.document.getElementById(id);
-      return note.innerHTML;
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
     });
   }
   const xrefs = window.document.querySelectorAll('a.quarto-xref');
@@ -1293,27 +1343,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       }
     }
     stripColumnClz(note)
-    const typesetMath = (el) => {
-      if (window.MathJax) {
-        // MathJax Typeset
-        window.MathJax.typeset([el]);
-      } else if (window.katex) {
-        // KaTeX Render
-        var mathElements = el.getElementsByClassName("math");
-        var macros = [];
-        for (var i = 0; i < mathElements.length; i++) {
-          var texText = mathElements[i].firstChild;
-          if (mathElements[i].tagName == "SPAN") {
-            window.katex.render(texText.data, mathElements[i], {
-              displayMode: mathElements[i].classList.contains('display'),
-              throwOnError: false,
-              macros: macros,
-              fleqn: false
-            });
-          }
-        }
-      }
-    }
     if (id === null || id.startsWith('sec-')) {
       // Special case sections, only their first couple elements
       const container = document.createElement("div");
@@ -1328,10 +1357,14 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             break;
           }
         }
-        typesetMath(container);
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
         return container.innerHTML
       } else {
-        typesetMath(note);
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
         return note.innerHTML;
       }
     } else {
@@ -1340,8 +1373,15 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       if (anchorLink) {
         anchorLink.remove();
       }
-      typesetMath(note);
-      return note.innerHTML;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
     }
   }
   for (var i=0; i<xrefs.length; i++) {
