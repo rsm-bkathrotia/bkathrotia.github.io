@@ -190,16 +190,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>This post implements a few measure of variable importance, interpreted as a key drivers analysis, for certain aspects of a payment card on customer satisfaction with that payment card.</p>
 <p><em>todo: replicate the table on slide 19 of the session 4 slides. This involves calculating pearson correlations, standardized regression coefficients, “usefulness”, Shapley values for a linear regression, Johnson’s relative weights, and the mean decrease in the gini coefficient from a random forest. You may use packages built into R or Python.</em></p>
 <p><em>If you want a challenge, either (1) implement one or more of the measures yourself. “Usefulness” is rather easy to program up. Shapley values for linear regression are a bit more work. Or (2) add additional measures to the table such as the importance scores from XGBoost.</em></p>
-<div id="b4ce9873" class="cell" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the dataset</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>data_path <span class="op">=</span> <span class="st">'data_for_drivers_analysis.csv'</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> pd.read_csv(data_path)</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the first few rows of the dataset to understand its structure</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>data.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="14">
+<div id="955f65c3" class="cell" data-message="true" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the dataset</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>data_path <span class="op">=</span> <span class="st">'data_for_drivers_analysis.csv'</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> pd.read_csv(data_path)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the first few rows of the dataset to understand its structure</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>data.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="13">
 <div>
 <div>
 
@@ -305,7 +303,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </div>
-<div id="c9175383" class="cell" data-execution_count="2">
+<div id="b6525209" class="cell" data-message="true" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate Pearson correlation coefficients</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>pearson_corr <span class="op">=</span> data.corr()[<span class="st">'satisfaction'</span>].drop(<span class="st">'satisfaction'</span>).<span class="bu">apply</span>(<span class="kw">lambda</span> x: x <span class="op">*</span> <span class="dv">100</span>).<span class="bu">round</span>(<span class="dv">1</span>)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Pearson Correlations:</span><span class="ch">\n</span><span class="st">"</span>, pearson_corr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -325,26 +323,15 @@ impact       25.5
 Name: satisfaction, dtype: float64</code></pre>
 </div>
 </div>
-<div id="94275858" class="cell" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.linear_model <span class="im">import</span> LinearRegression</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> StandardScaler</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Prepare the data for regression</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> data.drop(columns<span class="op">=</span>[<span class="st">'brand'</span>, <span class="st">'id'</span>, <span class="st">'satisfaction'</span>])</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> data[<span class="st">'satisfaction'</span>]</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Standardize the features</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>scaler <span class="op">=</span> StandardScaler()</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>X_std <span class="op">=</span> scaler.fit_transform(X)</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit the linear regression model</span></span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>reg <span class="op">=</span> LinearRegression().fit(X_std, y)</span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>coefficients <span class="op">=</span> reg.coef_</span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Standardized coefficients</span></span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>std_coeff <span class="op">=</span> pd.Series(coefficients, index<span class="op">=</span>X.columns).<span class="bu">apply</span>(<span class="kw">lambda</span> x: x <span class="op">*</span> <span class="dv">100</span>).<span class="bu">round</span>(<span class="dv">1</span>)</span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Standardized Regression Coefficients:</span><span class="ch">\n</span><span class="st">"</span>, std_coeff)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="b633a27a" class="cell" data-message="true" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit the linear regression model</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>reg <span class="op">=</span> LinearRegression().fit(X_std, y)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>coefficients <span class="op">=</span> reg.coef_</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="3e08d561" class="cell" data-message="true" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Standardized coefficients</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>std_coeff <span class="op">=</span> pd.Series(coefficients, index<span class="op">=</span>X.columns).<span class="bu">apply</span>(<span class="kw">lambda</span> x: x <span class="op">*</span> <span class="dv">100</span>).<span class="bu">round</span>(<span class="dv">1</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Standardized Regression Coefficients:</span><span class="ch">\n</span><span class="st">"</span>, std_coeff)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Standardized Regression Coefficients:
  trust        13.6
@@ -359,22 +346,9 @@ impact       15.0
 dtype: float64</code></pre>
 </div>
 </div>
-<div id="072911a4" class="cell" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> r2_score</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate the baseline R^2</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>baseline_r2 <span class="op">=</span> r2_score(y, reg.predict(X_std))</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>usefulness <span class="op">=</span> {}</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> feature <span class="kw">in</span> X.columns:</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    X_dropped <span class="op">=</span> X.drop(columns<span class="op">=</span>[feature])</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    X_dropped_std <span class="op">=</span> scaler.fit_transform(X_dropped)</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    reg_dropped <span class="op">=</span> LinearRegression().fit(X_dropped_std, y)</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    dropped_r2 <span class="op">=</span> r2_score(y, reg_dropped.predict(X_dropped_std))</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    usefulness[feature] <span class="op">=</span> (baseline_r2 <span class="op">-</span> dropped_r2) <span class="op">*</span> <span class="dv">100</span></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>usefulness_series <span class="op">=</span> pd.Series(usefulness).<span class="bu">round</span>(<span class="dv">1</span>)</span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Usefulness:</span><span class="ch">\n</span><span class="st">"</span>, usefulness_series)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="8778bbbd" class="cell" data-message="true" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>usefulness_series <span class="op">=</span> pd.Series(usefulness).<span class="bu">round</span>(<span class="dv">1</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Usefulness:</span><span class="ch">\n</span><span class="st">"</span>, usefulness_series)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Usefulness:
  trust        0.8
@@ -389,32 +363,9 @@ impact       1.1
 dtype: float64</code></pre>
 </div>
 </div>
-<div id="58add197" class="cell" data-execution_count="5">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> itertools <span class="im">import</span> combinations</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> mean_squared_error</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> compute_shapley_values(X, y):</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    features <span class="op">=</span> X.columns</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    base_model <span class="op">=</span> LinearRegression().fit(X, y)</span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    base_prediction <span class="op">=</span> base_model.predict(X)</span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    base_mse <span class="op">=</span> mean_squared_error(y, base_prediction)</span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    shapley_values <span class="op">=</span> pd.Series(<span class="fl">0.0</span>, index<span class="op">=</span>features)</span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> feature <span class="kw">in</span> features:</span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>        without_feature <span class="op">=</span> X.drop(columns<span class="op">=</span>[feature])</span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>        without_model <span class="op">=</span> LinearRegression().fit(without_feature, y)</span>
-<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>        without_prediction <span class="op">=</span> without_model.predict(without_feature)</span>
-<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>        without_mse <span class="op">=</span> mean_squared_error(y, without_prediction)</span>
-<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>        shapley_values[feature] <span class="op">=</span> <span class="bu">abs</span>(base_mse <span class="op">-</span> without_mse)  <span class="co"># Absolute value to reflect positive contribution</span></span>
-<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>    shapley_values <span class="op">=</span> shapley_values.<span class="bu">apply</span>(<span class="kw">lambda</span> x: x <span class="op">*</span> <span class="dv">100</span>).<span class="bu">round</span>(<span class="dv">1</span>)</span>
-<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> shapley_values</span>
-<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>shapley_values <span class="op">=</span> compute_shapley_values(X, y)</span>
-<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Shapley Values:</span><span class="ch">\n</span><span class="st">"</span>, shapley_values)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="456fc96f" class="cell" data-message="true" data-execution_count="10">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>shapley_values <span class="op">=</span> compute_shapley_values(X, y)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Shapley Values:</span><span class="ch">\n</span><span class="st">"</span>, shapley_values)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Shapley Values:
  trust        1.1
@@ -429,21 +380,12 @@ impact       1.5
 dtype: float64</code></pre>
 </div>
 </div>
-<div id="bf82a3a2" class="cell" data-execution_count="6">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute the correlation matrix</span></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>correlation_matrix <span class="op">=</span> np.corrcoef(X_std, rowvar<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute the eigenvalues and eigenvectors</span></span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>eigenvalues, eigenvectors <span class="op">=</span> np.linalg.eig(correlation_matrix)</span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute the relative weights</span></span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>relative_weights <span class="op">=</span> (eigenvectors <span class="op">**</span> <span class="dv">2</span>).dot(eigenvalues) <span class="op">/</span> np.<span class="bu">sum</span>(eigenvalues)</span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>johnsons_epsilon <span class="op">=</span> pd.Series(relative_weights, index<span class="op">=</span>X.columns).<span class="bu">apply</span>(<span class="kw">lambda</span> x: x <span class="op">*</span> <span class="dv">100</span>).<span class="bu">round</span>(<span class="dv">1</span>)</span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Johnson's Relative Weights (Epsilon):</span><span class="ch">\n</span><span class="st">"</span>, johnsons_epsilon)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="a2cc1e5d" class="cell" data-message="true" data-execution_count="12">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute the relative weights</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>relative_weights <span class="op">=</span> (eigenvectors <span class="op">**</span> <span class="dv">2</span>).dot(eigenvalues) <span class="op">/</span> np.<span class="bu">sum</span>(eigenvalues)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>johnsons_epsilon <span class="op">=</span> pd.Series(relative_weights, index<span class="op">=</span>X.columns).<span class="bu">apply</span>(<span class="kw">lambda</span> x: x <span class="op">*</span> <span class="dv">100</span>).<span class="bu">round</span>(<span class="dv">1</span>)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Johnson's Relative Weights (Epsilon):</span><span class="ch">\n</span><span class="st">"</span>, johnsons_epsilon)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Johnson's Relative Weights (Epsilon):
  trust        11.1
@@ -458,59 +400,643 @@ impact       11.1
 dtype: float64</code></pre>
 </div>
 </div>
-<div id="2bdbdfc0" class="cell" data-execution_count="7">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.ensemble <span class="im">import</span> RandomForestRegressor</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Train the Random Forest model</span></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>rf <span class="op">=</span> RandomForestRegressor()</span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>rf.fit(X, y)</span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute the mean decrease in Gini coefficient</span></span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>gini_importance <span class="op">=</span> pd.Series(rf.feature_importances_, index<span class="op">=</span>X.columns).<span class="bu">apply</span>(<span class="kw">lambda</span> x: x <span class="op">*</span> <span class="dv">100</span>).<span class="bu">round</span>(<span class="dv">1</span>)</span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Mean Decrease in Gini Coefficient:</span><span class="ch">\n</span><span class="st">"</span>, gini_importance)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="d9f3e13d" class="cell" data-message="true" data-execution_count="13">
+<div class="cell-output cell-output-display" data-execution_count="24">
+<style>#sk-container-id-1 {
+  /* Definition of color scheme common for light and dark mode */
+  --sklearn-color-text: black;
+  --sklearn-color-line: gray;
+  /* Definition of color scheme for unfitted estimators */
+  --sklearn-color-unfitted-level-0: #fff5e6;
+  --sklearn-color-unfitted-level-1: #f6e4d2;
+  --sklearn-color-unfitted-level-2: #ffe0b3;
+  --sklearn-color-unfitted-level-3: chocolate;
+  /* Definition of color scheme for fitted estimators */
+  --sklearn-color-fitted-level-0: #f0f8ff;
+  --sklearn-color-fitted-level-1: #d4ebff;
+  --sklearn-color-fitted-level-2: #b3dbfd;
+  --sklearn-color-fitted-level-3: cornflowerblue;
+
+  /* Specific color for light theme */
+  --sklearn-color-text-on-default-background: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, black)));
+  --sklearn-color-background: var(--sg-background-color, var(--theme-background, var(--jp-layout-color0, white)));
+  --sklearn-color-border-box: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, black)));
+  --sklearn-color-icon: #696969;
+
+  @media (prefers-color-scheme: dark) {
+    /* Redefinition of color scheme for dark theme */
+    --sklearn-color-text-on-default-background: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, white)));
+    --sklearn-color-background: var(--sg-background-color, var(--theme-background, var(--jp-layout-color0, #111)));
+    --sklearn-color-border-box: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, white)));
+    --sklearn-color-icon: #878787;
+  }
+}
+
+#sk-container-id-1 {
+  color: var(--sklearn-color-text);
+}
+
+#sk-container-id-1 pre {
+  padding: 0;
+}
+
+#sk-container-id-1 input.sk-hidden--visually {
+  border: 0;
+  clip: rect(1px 1px 1px 1px);
+  clip: rect(1px, 1px, 1px, 1px);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+}
+
+#sk-container-id-1 div.sk-dashed-wrapped {
+  border: 1px dashed var(--sklearn-color-line);
+  margin: 0 0.4em 0.5em 0.4em;
+  box-sizing: border-box;
+  padding-bottom: 0.4em;
+  background-color: var(--sklearn-color-background);
+}
+
+#sk-container-id-1 div.sk-container {
+  /* jupyter's `normalize.less` sets `[hidden] { display: none; }`
+     but bootstrap.min.css set `[hidden] { display: none !important; }`
+     so we also need the `!important` here to be able to override the
+     default hidden behavior on the sphinx rendered scikit-learn.org.
+     See: https://github.com/scikit-learn/scikit-learn/issues/21755 */
+  display: inline-block !important;
+  position: relative;
+}
+
+#sk-container-id-1 div.sk-text-repr-fallback {
+  display: none;
+}
+
+div.sk-parallel-item,
+div.sk-serial,
+div.sk-item {
+  /* draw centered vertical line to link estimators */
+  background-image: linear-gradient(var(--sklearn-color-text-on-default-background), var(--sklearn-color-text-on-default-background));
+  background-size: 2px 100%;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+/* Parallel-specific style estimator block */
+
+#sk-container-id-1 div.sk-parallel-item::after {
+  content: "";
+  width: 100%;
+  border-bottom: 2px solid var(--sklearn-color-text-on-default-background);
+  flex-grow: 1;
+}
+
+#sk-container-id-1 div.sk-parallel {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  background-color: var(--sklearn-color-background);
+  position: relative;
+}
+
+#sk-container-id-1 div.sk-parallel-item {
+  display: flex;
+  flex-direction: column;
+}
+
+#sk-container-id-1 div.sk-parallel-item:first-child::after {
+  align-self: flex-end;
+  width: 50%;
+}
+
+#sk-container-id-1 div.sk-parallel-item:last-child::after {
+  align-self: flex-start;
+  width: 50%;
+}
+
+#sk-container-id-1 div.sk-parallel-item:only-child::after {
+  width: 0;
+}
+
+/* Serial-specific style estimator block */
+
+#sk-container-id-1 div.sk-serial {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: var(--sklearn-color-background);
+  padding-right: 1em;
+  padding-left: 1em;
+}
+
+
+/* Toggleable style: style used for estimator/Pipeline/ColumnTransformer box that is
+clickable and can be expanded/collapsed.
+- Pipeline and ColumnTransformer use this feature and define the default style
+- Estimators will overwrite some part of the style using the `sk-estimator` class
+*/
+
+/* Pipeline and ColumnTransformer style (default) */
+
+#sk-container-id-1 div.sk-toggleable {
+  /* Default theme specific background. It is overwritten whether we have a
+  specific estimator or a Pipeline/ColumnTransformer */
+  background-color: var(--sklearn-color-background);
+}
+
+/* Toggleable label */
+#sk-container-id-1 label.sk-toggleable__label {
+  cursor: pointer;
+  display: block;
+  width: 100%;
+  margin-bottom: 0;
+  padding: 0.5em;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+#sk-container-id-1 label.sk-toggleable__label-arrow:before {
+  /* Arrow on the left of the label */
+  content: "▸";
+  float: left;
+  margin-right: 0.25em;
+  color: var(--sklearn-color-icon);
+}
+
+#sk-container-id-1 label.sk-toggleable__label-arrow:hover:before {
+  color: var(--sklearn-color-text);
+}
+
+/* Toggleable content - dropdown */
+
+#sk-container-id-1 div.sk-toggleable__content {
+  max-height: 0;
+  max-width: 0;
+  overflow: hidden;
+  text-align: left;
+  /* unfitted */
+  background-color: var(--sklearn-color-unfitted-level-0);
+}
+
+#sk-container-id-1 div.sk-toggleable__content.fitted {
+  /* fitted */
+  background-color: var(--sklearn-color-fitted-level-0);
+}
+
+#sk-container-id-1 div.sk-toggleable__content pre {
+  margin: 0.2em;
+  border-radius: 0.25em;
+  color: var(--sklearn-color-text);
+  /* unfitted */
+  background-color: var(--sklearn-color-unfitted-level-0);
+}
+
+#sk-container-id-1 div.sk-toggleable__content.fitted pre {
+  /* unfitted */
+  background-color: var(--sklearn-color-fitted-level-0);
+}
+
+#sk-container-id-1 input.sk-toggleable__control:checked~div.sk-toggleable__content {
+  /* Expand drop-down */
+  max-height: 200px;
+  max-width: 100%;
+  overflow: auto;
+}
+
+#sk-container-id-1 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {
+  content: "▾";
+}
+
+/* Pipeline/ColumnTransformer-specific style */
+
+#sk-container-id-1 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {
+  color: var(--sklearn-color-text);
+  background-color: var(--sklearn-color-unfitted-level-2);
+}
+
+#sk-container-id-1 div.sk-label.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
+  background-color: var(--sklearn-color-fitted-level-2);
+}
+
+/* Estimator-specific style */
+
+/* Colorize estimator box */
+#sk-container-id-1 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {
+  /* unfitted */
+  background-color: var(--sklearn-color-unfitted-level-2);
+}
+
+#sk-container-id-1 div.sk-estimator.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
+  /* fitted */
+  background-color: var(--sklearn-color-fitted-level-2);
+}
+
+#sk-container-id-1 div.sk-label label.sk-toggleable__label,
+#sk-container-id-1 div.sk-label label {
+  /* The background is the default theme color */
+  color: var(--sklearn-color-text-on-default-background);
+}
+
+/* On hover, darken the color of the background */
+#sk-container-id-1 div.sk-label:hover label.sk-toggleable__label {
+  color: var(--sklearn-color-text);
+  background-color: var(--sklearn-color-unfitted-level-2);
+}
+
+/* Label box, darken color on hover, fitted */
+#sk-container-id-1 div.sk-label.fitted:hover label.sk-toggleable__label.fitted {
+  color: var(--sklearn-color-text);
+  background-color: var(--sklearn-color-fitted-level-2);
+}
+
+/* Estimator label */
+
+#sk-container-id-1 div.sk-label label {
+  font-family: monospace;
+  font-weight: bold;
+  display: inline-block;
+  line-height: 1.2em;
+}
+
+#sk-container-id-1 div.sk-label-container {
+  text-align: center;
+}
+
+/* Estimator-specific */
+#sk-container-id-1 div.sk-estimator {
+  font-family: monospace;
+  border: 1px dotted var(--sklearn-color-border-box);
+  border-radius: 0.25em;
+  box-sizing: border-box;
+  margin-bottom: 0.5em;
+  /* unfitted */
+  background-color: var(--sklearn-color-unfitted-level-0);
+}
+
+#sk-container-id-1 div.sk-estimator.fitted {
+  /* fitted */
+  background-color: var(--sklearn-color-fitted-level-0);
+}
+
+/* on hover */
+#sk-container-id-1 div.sk-estimator:hover {
+  /* unfitted */
+  background-color: var(--sklearn-color-unfitted-level-2);
+}
+
+#sk-container-id-1 div.sk-estimator.fitted:hover {
+  /* fitted */
+  background-color: var(--sklearn-color-fitted-level-2);
+}
+
+/* Specification for estimator info (e.g. "i" and "?") */
+
+/* Common style for "i" and "?" */
+
+.sk-estimator-doc-link,
+a:link.sk-estimator-doc-link,
+a:visited.sk-estimator-doc-link {
+  float: right;
+  font-size: smaller;
+  line-height: 1em;
+  font-family: monospace;
+  background-color: var(--sklearn-color-background);
+  border-radius: 1em;
+  height: 1em;
+  width: 1em;
+  text-decoration: none !important;
+  margin-left: 1ex;
+  /* unfitted */
+  border: var(--sklearn-color-unfitted-level-1) 1pt solid;
+  color: var(--sklearn-color-unfitted-level-1);
+}
+
+.sk-estimator-doc-link.fitted,
+a:link.sk-estimator-doc-link.fitted,
+a:visited.sk-estimator-doc-link.fitted {
+  /* fitted */
+  border: var(--sklearn-color-fitted-level-1) 1pt solid;
+  color: var(--sklearn-color-fitted-level-1);
+}
+
+/* On hover */
+div.sk-estimator:hover .sk-estimator-doc-link:hover,
+.sk-estimator-doc-link:hover,
+div.sk-label-container:hover .sk-estimator-doc-link:hover,
+.sk-estimator-doc-link:hover {
+  /* unfitted */
+  background-color: var(--sklearn-color-unfitted-level-3);
+  color: var(--sklearn-color-background);
+  text-decoration: none;
+}
+
+div.sk-estimator.fitted:hover .sk-estimator-doc-link.fitted:hover,
+.sk-estimator-doc-link.fitted:hover,
+div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
+.sk-estimator-doc-link.fitted:hover {
+  /* fitted */
+  background-color: var(--sklearn-color-fitted-level-3);
+  color: var(--sklearn-color-background);
+  text-decoration: none;
+}
+
+/* Span, style for the box shown on hovering the info icon */
+.sk-estimator-doc-link span {
+  display: none;
+  z-index: 9999;
+  position: relative;
+  font-weight: normal;
+  right: .2ex;
+  padding: .5ex;
+  margin: .5ex;
+  width: min-content;
+  min-width: 20ex;
+  max-width: 50ex;
+  color: var(--sklearn-color-text);
+  box-shadow: 2pt 2pt 4pt #999;
+  /* unfitted */
+  background: var(--sklearn-color-unfitted-level-0);
+  border: .5pt solid var(--sklearn-color-unfitted-level-3);
+}
+
+.sk-estimator-doc-link.fitted span {
+  /* fitted */
+  background: var(--sklearn-color-fitted-level-0);
+  border: var(--sklearn-color-fitted-level-3);
+}
+
+.sk-estimator-doc-link:hover span {
+  display: block;
+}
+
+/* "?"-specific style due to the `<a>` HTML tag */
+
+#sk-container-id-1 a.estimator_doc_link {
+  float: right;
+  font-size: 1rem;
+  line-height: 1em;
+  font-family: monospace;
+  background-color: var(--sklearn-color-background);
+  border-radius: 1rem;
+  height: 1rem;
+  width: 1rem;
+  text-decoration: none;
+  /* unfitted */
+  color: var(--sklearn-color-unfitted-level-1);
+  border: var(--sklearn-color-unfitted-level-1) 1pt solid;
+}
+
+#sk-container-id-1 a.estimator_doc_link.fitted {
+  /* fitted */
+  border: var(--sklearn-color-fitted-level-1) 1pt solid;
+  color: var(--sklearn-color-fitted-level-1);
+}
+
+/* On hover */
+#sk-container-id-1 a.estimator_doc_link:hover {
+  /* unfitted */
+  background-color: var(--sklearn-color-unfitted-level-3);
+  color: var(--sklearn-color-background);
+  text-decoration: none;
+}
+
+#sk-container-id-1 a.estimator_doc_link.fitted:hover {
+  /* fitted */
+  background-color: var(--sklearn-color-fitted-level-3);
+}
+</a></style><div id="sk-container-id-1" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>RandomForestRegressor()</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br>On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden=""><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-1" type="checkbox" checked=""><label for="sk-estimator-id-1" class="sk-toggleable__label fitted sk-toggleable__label-arrow fitted">&nbsp;&nbsp;RandomForestRegressor<a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.4/modules/generated/sklearn.ensemble.RandomForestRegressor.html">?<span>Documentation for RandomForestRegressor</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></label><div class="sk-toggleable__content fitted"><pre>RandomForestRegressor()</pre></div> </div></div></div></div>
+</div>
+</div>
+<div id="026078d1" class="cell" data-message="true" data-execution_count="14">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute the mean decrease in Gini coefficient</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>gini_importance <span class="op">=</span> pd.Series(rf.feature_importances_, index<span class="op">=</span>X.columns).<span class="bu">apply</span>(<span class="kw">lambda</span> x: x <span class="op">*</span> <span class="dv">100</span>).<span class="bu">round</span>(<span class="dv">1</span>)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Mean Decrease in Gini Coefficient:</span><span class="ch">\n</span><span class="st">"</span>, gini_importance)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Mean Decrease in Gini Coefficient:
- trust        15.4
-build        10.0
-differs       9.0
-easy          9.7
-appealing     8.4
+ trust        15.6
+build         9.8
+differs       9.3
+easy          9.8
+appealing     8.8
 rewarding    10.4
-popular       9.7
-service      13.3
-impact       14.1
+popular       9.4
+service      14.2
+impact       12.7
 dtype: float64</code></pre>
 </div>
 </div>
-<div id="bf6ae892" class="cell" data-execution_count="8">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Remove 'brand' and 'id' from the results</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>pearson_corr_cleaned <span class="op">=</span> pearson_corr.drop(index<span class="op">=</span>[<span class="st">'brand'</span>, <span class="st">'id'</span>], errors<span class="op">=</span><span class="st">'ignore'</span>)</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>usefulness_series_cleaned <span class="op">=</span> usefulness_series.drop(index<span class="op">=</span>[<span class="st">'brand'</span>, <span class="st">'id'</span>], errors<span class="op">=</span><span class="st">'ignore'</span>)</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>shapley_values_cleaned <span class="op">=</span> shapley_values.drop(index<span class="op">=</span>[<span class="st">'brand'</span>, <span class="st">'id'</span>], errors<span class="op">=</span><span class="st">'ignore'</span>)</span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>johnsons_epsilon_cleaned <span class="op">=</span> johnsons_epsilon.drop(index<span class="op">=</span>[<span class="st">'brand'</span>, <span class="st">'id'</span>], errors<span class="op">=</span><span class="st">'ignore'</span>)</span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>gini_importance_cleaned <span class="op">=</span> gini_importance.drop(index<span class="op">=</span>[<span class="st">'brand'</span>, <span class="st">'id'</span>], errors<span class="op">=</span><span class="st">'ignore'</span>)</span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Combine results into a single DataFrame</span></span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>results_cleaned <span class="op">=</span> pd.DataFrame({</span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Pearson Correlations'</span>: pearson_corr_cleaned,</span>
-<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Standardized Regression Coefficients'</span>: std_coeff,</span>
-<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Usefulness'</span>: usefulness_series_cleaned,</span>
-<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Shapley Values'</span>: shapley_values_cleaned,</span>
-<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Johnson</span><span class="ch">\'</span><span class="st">s Epsilon'</span>: johnsons_epsilon_cleaned,</span>
-<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Mean Decrease in Gini Coefficient'</span>: gini_importance_cleaned</span>
-<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>})</span>
-<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply styling</span></span>
-<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>styled_results_cleaned <span class="op">=</span> results_cleaned.style.<span class="bu">format</span>(<span class="st">"</span><span class="sc">{:.1f}</span><span class="st">%"</span>).background_gradient(cmap<span class="op">=</span><span class="st">'coolwarm'</span>, axis<span class="op">=</span><span class="dv">0</span>)</span>
-<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Save styled table as HTML</span></span>
-<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>styled_results_cleaned.to_html(<span class="st">"styled_results_cleaned.html"</span>)</span>
-<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Styled table saved as 'styled_results_cleaned.html'. Open this file in a web browser to view the table."</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Styled table saved as 'styled_results_cleaned.html'. Open this file in a web browser to view the table.</code></pre>
+<div id="f40e058f" class="cell" data-message="true" data-execution_count="16">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the styled DataFrame</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>styled_results_cleaned</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="27">
+<div>
+<style type="text/css">
+#T_cad49_row0_col0, #T_cad49_row0_col5, #T_cad49_row8_col1, #T_cad49_row8_col2, #T_cad49_row8_col3 {
+  background-color: #b40426;
+  color: #f1f1f1;
+}
+#T_cad49_row0_col1 {
+  background-color: #d55042;
+  color: #f1f1f1;
+}
+#T_cad49_row0_col2 {
+  background-color: #f6a283;
+  color: #000000;
+}
+#T_cad49_row0_col3 {
+  background-color: #f5a081;
+  color: #000000;
+}
+#T_cad49_row0_col4, #T_cad49_row1_col2, #T_cad49_row1_col3, #T_cad49_row1_col4, #T_cad49_row2_col4, #T_cad49_row3_col2, #T_cad49_row3_col3, #T_cad49_row3_col4, #T_cad49_row4_col4, #T_cad49_row4_col5, #T_cad49_row5_col1, #T_cad49_row5_col2, #T_cad49_row5_col3, #T_cad49_row5_col4, #T_cad49_row6_col0, #T_cad49_row6_col2, #T_cad49_row6_col3, #T_cad49_row6_col4, #T_cad49_row7_col4, #T_cad49_row8_col4 {
+  background-color: #3b4cc0;
+  color: #f1f1f1;
+}
+#T_cad49_row1_col0 {
+  background-color: #8caffe;
+  color: #000000;
+}
+#T_cad49_row1_col1 {
+  background-color: #5f7fe8;
+  color: #f1f1f1;
+}
+#T_cad49_row1_col5, #T_cad49_row3_col5 {
+  background-color: #688aef;
+  color: #f1f1f1;
+}
+#T_cad49_row2_col0 {
+  background-color: #6f92f3;
+  color: #f1f1f1;
+}
+#T_cad49_row2_col1 {
+  background-color: #7699f6;
+  color: #f1f1f1;
+}
+#T_cad49_row2_col2, #T_cad49_row4_col2, #T_cad49_row6_col1 {
+  background-color: #5673e0;
+  color: #f1f1f1;
+}
+#T_cad49_row2_col3, #T_cad49_row4_col3 {
+  background-color: #4f69d9;
+  color: #f1f1f1;
+}
+#T_cad49_row2_col5 {
+  background-color: #506bda;
+  color: #f1f1f1;
+}
+#T_cad49_row3_col0 {
+  background-color: #dbdcde;
+  color: #000000;
+}
+#T_cad49_row3_col1 {
+  background-color: #6687ed;
+  color: #f1f1f1;
+}
+#T_cad49_row4_col0 {
+  background-color: #cbd8ee;
+  color: #000000;
+}
+#T_cad49_row4_col1, #T_cad49_row5_col5 {
+  background-color: #88abfd;
+  color: #000000;
+}
+#T_cad49_row5_col0 {
+  background-color: #98b9ff;
+  color: #000000;
+}
+#T_cad49_row6_col5 {
+  background-color: #5572df;
+  color: #f1f1f1;
+}
+#T_cad49_row7_col0 {
+  background-color: #ca3b37;
+  color: #f1f1f1;
+}
+#T_cad49_row7_col1 {
+  background-color: #f7b396;
+  color: #000000;
+}
+#T_cad49_row7_col2 {
+  background-color: #d1dae9;
+  color: #000000;
+}
+#T_cad49_row7_col3 {
+  background-color: #c0d4f5;
+  color: #000000;
+}
+#T_cad49_row7_col5 {
+  background-color: #ee8669;
+  color: #f1f1f1;
+}
+#T_cad49_row8_col0 {
+  background-color: #b8122a;
+  color: #f1f1f1;
+}
+#T_cad49_row8_col5 {
+  background-color: #edd1c2;
+  color: #000000;
+}
+</style>
+
+<table id="T_cad49" data-quarto-postprocess="true" class="table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th class="blank level0" data-quarto-table-cell-role="th">&nbsp;</th>
+<th id="T_cad49_level0_col0" class="col_heading level0 col0" data-quarto-table-cell-role="th">Pearson Correlations</th>
+<th id="T_cad49_level0_col1" class="col_heading level0 col1" data-quarto-table-cell-role="th">Standardized Regression Coefficients</th>
+<th id="T_cad49_level0_col2" class="col_heading level0 col2" data-quarto-table-cell-role="th">Usefulness</th>
+<th id="T_cad49_level0_col3" class="col_heading level0 col3" data-quarto-table-cell-role="th">Shapley Values</th>
+<th id="T_cad49_level0_col4" class="col_heading level0 col4" data-quarto-table-cell-role="th">Johnson's Epsilon</th>
+<th id="T_cad49_level0_col5" class="col_heading level0 col5" data-quarto-table-cell-role="th">Mean Decrease in Gini Coefficient</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td id="T_cad49_level0_row0" class="row_heading level0 row0" data-quarto-table-cell-role="th">trust</td>
+<td id="T_cad49_row0_col0" class="data row0 col0">25.6%</td>
+<td id="T_cad49_row0_col1" class="data row0 col1">13.6%</td>
+<td id="T_cad49_row0_col2" class="data row0 col2">0.8%</td>
+<td id="T_cad49_row0_col3" class="data row0 col3">1.1%</td>
+<td id="T_cad49_row0_col4" class="data row0 col4">11.1%</td>
+<td id="T_cad49_row0_col5" class="data row0 col5">15.6%</td>
+</tr>
+<tr class="even">
+<td id="T_cad49_level0_row1" class="row_heading level0 row1" data-quarto-table-cell-role="th">build</td>
+<td id="T_cad49_row1_col0" class="data row1 col0">19.2%</td>
+<td id="T_cad49_row1_col1" class="data row1 col1">2.3%</td>
+<td id="T_cad49_row1_col2" class="data row1 col2">0.0%</td>
+<td id="T_cad49_row1_col3" class="data row1 col3">0.0%</td>
+<td id="T_cad49_row1_col4" class="data row1 col4">11.1%</td>
+<td id="T_cad49_row1_col5" class="data row1 col5">9.8%</td>
+</tr>
+<tr class="odd">
+<td id="T_cad49_level0_row2" class="row_heading level0 row2" data-quarto-table-cell-role="th">differs</td>
+<td id="T_cad49_row2_col0" class="data row2 col0">18.5%</td>
+<td id="T_cad49_row2_col1" class="data row2 col1">3.3%</td>
+<td id="T_cad49_row2_col2" class="data row2 col2">0.1%</td>
+<td id="T_cad49_row2_col3" class="data row2 col3">0.1%</td>
+<td id="T_cad49_row2_col4" class="data row2 col4">11.1%</td>
+<td id="T_cad49_row2_col5" class="data row2 col5">9.3%</td>
+</tr>
+<tr class="even">
+<td id="T_cad49_level0_row3" class="row_heading level0 row3" data-quarto-table-cell-role="th">easy</td>
+<td id="T_cad49_row3_col0" class="data row3 col0">21.3%</td>
+<td id="T_cad49_row3_col1" class="data row3 col1">2.6%</td>
+<td id="T_cad49_row3_col2" class="data row3 col2">0.0%</td>
+<td id="T_cad49_row3_col3" class="data row3 col3">0.0%</td>
+<td id="T_cad49_row3_col4" class="data row3 col4">11.1%</td>
+<td id="T_cad49_row3_col5" class="data row3 col5">9.8%</td>
+</tr>
+<tr class="odd">
+<td id="T_cad49_level0_row4" class="row_heading level0 row4" data-quarto-table-cell-role="th">appealing</td>
+<td id="T_cad49_row4_col0" class="data row4 col0">20.8%</td>
+<td id="T_cad49_row4_col1" class="data row4 col1">4.0%</td>
+<td id="T_cad49_row4_col2" class="data row4 col2">0.1%</td>
+<td id="T_cad49_row4_col3" class="data row4 col3">0.1%</td>
+<td id="T_cad49_row4_col4" class="data row4 col4">11.1%</td>
+<td id="T_cad49_row4_col5" class="data row4 col5">8.8%</td>
+</tr>
+<tr class="even">
+<td id="T_cad49_level0_row5" class="row_heading level0 row5" data-quarto-table-cell-role="th">rewarding</td>
+<td id="T_cad49_row5_col0" class="data row5 col0">19.5%</td>
+<td id="T_cad49_row5_col1" class="data row5 col1">0.6%</td>
+<td id="T_cad49_row5_col2" class="data row5 col2">0.0%</td>
+<td id="T_cad49_row5_col3" class="data row5 col3">0.0%</td>
+<td id="T_cad49_row5_col4" class="data row5 col4">11.1%</td>
+<td id="T_cad49_row5_col5" class="data row5 col5">10.4%</td>
+</tr>
+<tr class="odd">
+<td id="T_cad49_level0_row6" class="row_heading level0 row6" data-quarto-table-cell-role="th">popular</td>
+<td id="T_cad49_row6_col0" class="data row6 col0">17.1%</td>
+<td id="T_cad49_row6_col1" class="data row6 col1">1.9%</td>
+<td id="T_cad49_row6_col2" class="data row6 col2">0.0%</td>
+<td id="T_cad49_row6_col3" class="data row6 col3">0.0%</td>
+<td id="T_cad49_row6_col4" class="data row6 col4">11.1%</td>
+<td id="T_cad49_row6_col5" class="data row6 col5">9.4%</td>
+</tr>
+<tr class="even">
+<td id="T_cad49_level0_row7" class="row_heading level0 row7" data-quarto-table-cell-role="th">service</td>
+<td id="T_cad49_row7_col0" class="data row7 col0">25.1%</td>
+<td id="T_cad49_row7_col1" class="data row7 col1">10.4%</td>
+<td id="T_cad49_row7_col2" class="data row7 col2">0.5%</td>
+<td id="T_cad49_row7_col3" class="data row7 col3">0.6%</td>
+<td id="T_cad49_row7_col4" class="data row7 col4">11.1%</td>
+<td id="T_cad49_row7_col5" class="data row7 col5">14.2%</td>
+</tr>
+<tr class="odd">
+<td id="T_cad49_level0_row8" class="row_heading level0 row8" data-quarto-table-cell-role="th">impact</td>
+<td id="T_cad49_row8_col0" class="data row8 col0">25.5%</td>
+<td id="T_cad49_row8_col1" class="data row8 col1">15.0%</td>
+<td id="T_cad49_row8_col2" class="data row8 col2">1.1%</td>
+<td id="T_cad49_row8_col3" class="data row8 col3">1.5%</td>
+<td id="T_cad49_row8_col4" class="data row8 col4">11.1%</td>
+<td id="T_cad49_row8_col5" class="data row8 col5">12.7%</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 </div>
 

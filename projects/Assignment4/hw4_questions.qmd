@@ -14,8 +14,24 @@ _If you want a challenge, either (1) implement one or more of the measures yours
 
 
 ```{python}
+#| echo: false
+#| message: false
 
 import pandas as pd
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import r2_score
+from itertools import combinations
+from sklearn.metrics import mean_squared_error
+import numpy as np
+from sklearn.ensemble import RandomForestRegressor
+
+```
+
+```{python}
+
+#| echo: true
+#| message: true
 
 # Load the dataset
 data_path = 'data_for_drivers_analysis.csv'
@@ -28,16 +44,17 @@ data.head()
 
 ```{python}
 
+#| echo: true
+#| message: true
+
 # Calculate Pearson correlation coefficients
 pearson_corr = data.corr()['satisfaction'].drop('satisfaction').apply(lambda x: x * 100).round(1)
 print("Pearson Correlations:\n", pearson_corr)
 ```
 
 ```{python}
-
-from sklearn.linear_model import LinearRegression
-from sklearn.preprocessing import StandardScaler
-import pandas as pd
+#| echo: false
+#| message: true
 
 # Prepare the data for regression
 X = data.drop(columns=['brand', 'id', 'satisfaction'])
@@ -46,21 +63,37 @@ y = data['satisfaction']
 # Standardize the features
 scaler = StandardScaler()
 X_std = scaler.fit_transform(X)
+```
+
+
+```{python}
+
+#| echo: true
+#| message: true
 
 # Fit the linear regression model
 reg = LinearRegression().fit(X_std, y)
 coefficients = reg.coef_
-
-# Standardized coefficients
-std_coeff = pd.Series(coefficients, index=X.columns).apply(lambda x: x * 100).round(1)
-print("Standardized Regression Coefficients:\n", std_coeff)
 ```
 
 
 
 ```{python}
 
-from sklearn.metrics import r2_score
+#| echo: true
+#| message: true
+
+# Standardized coefficients
+std_coeff = pd.Series(coefficients, index=X.columns).apply(lambda x: x * 100).round(1)
+print("Standardized Regression Coefficients:\n", std_coeff)
+
+```
+
+
+
+```{python}
+#| echo: false
+#| message: true
 
 # Calculate the baseline R^2
 baseline_r2 = r2_score(y, reg.predict(X_std))
@@ -73,17 +106,26 @@ for feature in X.columns:
     dropped_r2 = r2_score(y, reg_dropped.predict(X_dropped_std))
     usefulness[feature] = (baseline_r2 - dropped_r2) * 100
 
+```
+
+
+
+```{python}
+#| echo: true
+#| message: true
+
 usefulness_series = pd.Series(usefulness).round(1)
 print("Usefulness:\n", usefulness_series)
 
 ```
 
 
+
 ```{python}
 
-from itertools import combinations
-from sklearn.metrics import mean_squared_error
-import pandas as pd
+#| echo: false
+#| message: true
+
 
 def compute_shapley_values(X, y):
     features = X.columns
@@ -104,15 +146,22 @@ def compute_shapley_values(X, y):
     shapley_values = shapley_values.apply(lambda x: x * 100).round(1)
     return shapley_values
 
+```
+
+```{python}
+
+#| echo: true
+#| message: true
+
 shapley_values = compute_shapley_values(X, y)
 print("Shapley Values:\n", shapley_values)
-
 ```
 
 
 ```{python}
-import numpy as np
-import pandas as pd
+
+#| echo: false
+#| message: true
 
 # Compute the correlation matrix
 correlation_matrix = np.corrcoef(X_std, rowvar=False)
@@ -120,33 +169,46 @@ correlation_matrix = np.corrcoef(X_std, rowvar=False)
 # Compute the eigenvalues and eigenvectors
 eigenvalues, eigenvectors = np.linalg.eig(correlation_matrix)
 
+```
+
+```{python}
+
+#| echo: true
+#| message: true
+
 # Compute the relative weights
 relative_weights = (eigenvectors ** 2).dot(eigenvalues) / np.sum(eigenvalues)
 johnsons_epsilon = pd.Series(relative_weights, index=X.columns).apply(lambda x: x * 100).round(1)
 
 print("Johnson's Relative Weights (Epsilon):\n", johnsons_epsilon)
-
 ```
 
 
 ```{python}
-
-from sklearn.ensemble import RandomForestRegressor
-import pandas as pd
+#| echo: false
+#| message: true
 
 # Train the Random Forest model
 rf = RandomForestRegressor()
 rf.fit(X, y)
 
+```
+
+```{python}
+#| echo: true
+#| message: true
+
 # Compute the mean decrease in Gini coefficient
 gini_importance = pd.Series(rf.feature_importances_, index=X.columns).apply(lambda x: x * 100).round(1)
 
 print("Mean Decrease in Gini Coefficient:\n", gini_importance)
-
 ```
 
 
 ```{python}
+
+#| echo: false
+#| message: true
 
 # Remove 'brand' and 'id' from the results
 pearson_corr_cleaned = pearson_corr.drop(index=['brand', 'id'], errors='ignore')
@@ -168,9 +230,23 @@ results_cleaned = pd.DataFrame({
 # Apply styling
 styled_results_cleaned = results_cleaned.style.format("{:.1f}%").background_gradient(cmap='coolwarm', axis=0)
 
+```
+
+```{python}
+#| echo: true
+#| message: true
+
+# Display the styled DataFrame
+styled_results_cleaned
+```
+
+```{python}
+
+#| echo: false
+#| message: false
+
 # Save styled table as HTML
-styled_results_cleaned.to_html("styled_results_cleaned.html")
+# styled_results_cleaned.to_html("styled_results_cleaned.html")
 
-print("Styled table saved as 'styled_results_cleaned.html'. Open this file in a web browser to view the table.")
-
+# print("Styled table saved as 'styled_results_cleaned.html'. Open this file in a web browser to view the table.")
 ```
