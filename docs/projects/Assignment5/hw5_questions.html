@@ -205,12 +205,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="k-means" class="level2">
 <h2 class="anchored" data-anchor-id="k-means">K-Means</h2>
-<p><em>todo: write your own code to implement the k-means algorithm. Make plots of the various steps the algorithm takes so you can “see” the algorithm working. Test your algorithm on either the Iris or PalmerPenguins datasets. Compare your results to the built-in <code>kmeans</code> function in R or Python.</em></p>
-<p><em>todo: Calculate both the within-cluster-sum-of-squares and silhouette scores (you can use built-in functions to do so) and plot the results for various numbers of clusters (ie, K=2,3,…,7). How many clusters are suggested by these two metrics?</em></p>
+<p>In this assignment, I implemented the K-means clustering algorithm from scratch and visualized the steps of the algorithm to gain a deeper understanding of how it works. The implementation was tested on the Iris dataset, a well-known dataset in machine learning. The objective was to compare the results of my implementation with the built-in kmeans function available in Python’s sklearn library.</p>
+<p>Additionally, I calculated both the within-cluster sum-of-squares (WCSS) and silhouette scores for various numbers of clusters (K = 2, 3, …, 7). These metrics were then plotted to help determine the optimal number of clusters for the dataset. By analyzing the plots, I aimed to identify the number of clusters suggested by these two metrics.</p>
+<p>This comprehensive approach not only provided practical experience with the K-means algorithm but also enhanced my understanding of evaluating clustering results using different metrics.</p>
 <section id="load-the-dataset" class="level3">
 <h3 class="anchored" data-anchor-id="load-the-dataset">Load the Dataset</h3>
 <p>First, I loaded the Iris dataset using the pandas library. The Iris dataset contains measurements of sepal length, sepal width, petal length, and petal width for three species of iris flowers. Loading the dataset allowed me to familiarize myself with the structure and contents of the data.</p>
-<div id="5ad52ae6" class="cell" data-message="true" data-execution_count="1">
+<div id="4452fba2" class="cell" data-message="true" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the Iris dataset</span></span>
@@ -231,7 +232,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="initialize-centroids" class="level3">
 <h3 class="anchored" data-anchor-id="initialize-centroids">Initialize Centroids</h3>
 <p>To start the K-means clustering process, I needed to initialize the centroids randomly. Centroids are the center points of the clusters. I defined a function initialize_centroids that selects k random points from the dataset as the initial centroids. This randomness helps in ensuring that the centroids are spread out and can capture different parts of the data distribution.</p>
-<div id="ab319bd1" class="cell" data-message="true" data-execution_count="3">
+<div id="b89d929d" class="cell" data-message="true" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize centroids for K=3</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>k <span class="op">=</span> <span class="dv">3</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>initial_centroids <span class="op">=</span> initialize_centroids(iris_data, k)</span>
@@ -249,7 +250,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="assign-clusters" class="level3">
 <h3 class="anchored" data-anchor-id="assign-clusters">Assign Clusters</h3>
 <p>Next, I needed to assign each data point to the nearest centroid. This step is crucial because it determines the initial grouping of data points. To do this, I calculated the Euclidean distance between each data point and each centroid, then assigned each point to the centroid it was closest to.</p>
-<div id="b6cffdd5" class="cell" data-message="true" data-execution_count="5">
+<div id="747f6f5c" class="cell" data-message="true" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Assign clusters based on initial centroids</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>initial_clusters <span class="op">=</span> assign_clusters(iris_array, initial_centroids)</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Initial Cluster Assignments:"</span>)</span>
@@ -268,7 +269,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="update-centroids" class="level3">
 <h3 class="anchored" data-anchor-id="update-centroids">Update Centroids</h3>
 <p>After the initial assignment of clusters, I needed to update the centroids. The new centroid for each cluster is calculated as the mean of all data points assigned to that cluster. This step helps in refining the position of the centroids to better represent the data points in their respective clusters.</p>
-<div id="7a785bd2" class="cell" data-message="true" data-execution_count="7">
+<div id="02f6524d" class="cell" data-message="true" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Update centroids based on initial cluster assignments</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>new_centroids <span class="op">=</span> update_centroids(iris_array, initial_clusters, k)</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Updated Centroids:"</span>)</span>
@@ -285,7 +286,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="implement-k-means-algorithm" class="level3">
 <h3 class="anchored" data-anchor-id="implement-k-means-algorithm">Implement K-means Algorithm</h3>
 <p>To automate the process of updating centroids and reassigning clusters, I combined the initialization, assignment, and update steps into a single function called kmeans. This function iterates until the centroids no longer change significantly, indicating convergence.</p>
-<div id="bb2fcbe7" class="cell" data-message="true" data-execution_count="9">
+<div id="06dfdc99" class="cell" data-message="true" data-execution_count="9">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Run K-means algorithm for K=3</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>k <span class="op">=</span> <span class="dv">3</span></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>final_clusters, final_centroids <span class="op">=</span> kmeans(iris_array, k)</span>
@@ -311,7 +312,7 @@ Final Centroids:
 <section id="calculate-wcss-for-different-k-values" class="level3">
 <h3 class="anchored" data-anchor-id="calculate-wcss-for-different-k-values">Calculate WCSS for Different K Values</h3>
 <p>To evaluate the performance of the clustering, I calculated the within-cluster sum-of-squares (WCSS) for different values of K. WCSS measures the total variance within each cluster, and it’s used to determine the optimal number of clusters.</p>
-<div id="9c0633c1" class="cell" data-message="true" data-execution_count="11">
+<div id="fe023e54" class="cell" data-message="true" data-execution_count="11">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Print WCSS values</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"WCSS values:"</span>, wcss_values)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -323,7 +324,7 @@ Final Centroids:
 <section id="plot-wcss-values" class="level3">
 <h3 class="anchored" data-anchor-id="plot-wcss-values">Plot WCSS Values</h3>
 <p>Plotting the WCSS values for different K values allowed me to visually inspect where the “elbow” point is, which indicates the optimal number of clusters.</p>
-<div id="b39f0f39" class="cell" data-message="true" data-execution_count="12">
+<div id="def13a0e" class="cell" data-message="true" data-execution_count="12">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot WCSS values</span></span>
@@ -346,7 +347,7 @@ Final Centroids:
 <section id="calculate-silhouette-scores-for-different-k-values" class="level3">
 <h3 class="anchored" data-anchor-id="calculate-silhouette-scores-for-different-k-values">Calculate Silhouette Scores for Different K Values</h3>
 <p>In addition to WCSS, I calculated silhouette scores for different K values. The silhouette score measures how similar a data point is to its own cluster compared to other clusters, providing a measure of cluster cohesion and separation.</p>
-<div id="aeb8f2a5" class="cell" data-message="true" data-execution_count="13">
+<div id="f7ac88ec" class="cell" data-message="true" data-execution_count="13">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> silhouette_score</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate silhouette scores for K=2 to K=7</span></span>
@@ -356,7 +357,7 @@ Final Centroids:
 <span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    silhouette_avg <span class="op">=</span> silhouette_score(iris_array, clusters)</span>
 <span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    silhouette_scores.append(silhouette_avg)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="2173658f" class="cell" data-message="true" data-execution_count="14">
+<div id="ec51d52c" class="cell" data-message="true" data-execution_count="14">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Print silhouette scores</span></span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Silhouette scores:"</span>, silhouette_scores)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -368,7 +369,7 @@ Final Centroids:
 <section id="plot-silhouette-scores" class="level3">
 <h3 class="anchored" data-anchor-id="plot-silhouette-scores">Plot Silhouette Scores</h3>
 <p>Plotting the silhouette scores helped me determine the optimal number of clusters by identifying the K value with the highest silhouette score.</p>
-<div id="140edec9" class="cell" data-message="true" data-execution_count="15">
+<div id="cf7c93e9" class="cell" data-message="true" data-execution_count="15">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot silhouette scores</span></span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">5</span>))</span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>plt.plot(<span class="bu">range</span>(<span class="dv">2</span>, <span class="dv">8</span>), silhouette_scores, marker<span class="op">=</span><span class="st">'o'</span>)</span>

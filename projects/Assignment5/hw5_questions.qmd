@@ -7,9 +7,11 @@ date: today
 
 ## K-Means
 
-_todo: write your own code to implement the k-means algorithm.  Make plots of the various steps the algorithm takes so you can "see" the algorithm working.  Test your algorithm on either the Iris or PalmerPenguins datasets.  Compare your results to the built-in `kmeans` function in R or Python._
+In this assignment, I implemented the K-means clustering algorithm from scratch and visualized the steps of the algorithm to gain a deeper understanding of how it works. The implementation was tested on the Iris dataset, a well-known dataset in machine learning. The objective was to compare the results of my implementation with the built-in kmeans function available in Python's sklearn library.
 
-_todo: Calculate both the within-cluster-sum-of-squares and silhouette scores (you can use built-in functions to do so) and plot the results for various numbers of clusters (ie, K=2,3,...,7). How many clusters are suggested by these two metrics?_
+Additionally, I calculated both the within-cluster sum-of-squares (WCSS) and silhouette scores for various numbers of clusters (K = 2, 3, ..., 7). These metrics were then plotted to help determine the optimal number of clusters for the dataset. By analyzing the plots, I aimed to identify the number of clusters suggested by these two metrics.
+
+This comprehensive approach not only provided practical experience with the K-means algorithm but also enhanced my understanding of evaluating clustering results using different metrics.
 
 
 ### Load the Dataset
